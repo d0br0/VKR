@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
@@ -45,7 +45,7 @@ func wikipediaAPI(request string) (answer []string) {
 		defer response.Body.Close()
 
 		//Считываем ответ
-		contents, err := ioutil.ReadAll(response.Body)
+		contents, err := io.ReadAll(response.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
