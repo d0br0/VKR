@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: test
 
   bot:
-    image: kirigaiia/attendance_accounting_bot
+    image: d0bro/VKR
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
