@@ -14,7 +14,7 @@ services:
       DB_SWITCH: "on"
       TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
       HOST: db
-      PORT: 5432
+      PORT: 8443
       USER: postgres
       PASSWORD: test
       DBNAME: postgres
