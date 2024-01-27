@@ -9,13 +9,12 @@ services:
 
   bot:
     image: trigun117/wikipedia-telegram-bot
-    ports:
-      - 8443:8443
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
       TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
       HOST: db
+      PORT: 8443
       USER: postgres
       PASSWORD: test
       DBNAME: postgres
