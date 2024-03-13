@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: test
 
   bot:
-    image: d0br0/vkr
+    image: trigun117/wikipedia-telegram-bot
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
