@@ -2,7 +2,7 @@ version: '3.19'
 
 services:
   bot:
-    image: dockerbot:latest
+    image: 
     environment:
       TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
   db:
