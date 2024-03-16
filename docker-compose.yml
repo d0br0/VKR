@@ -2,7 +2,8 @@ version: '3'
 
 services:
   bot:
-    image: alpine:latest
+    build: .
+    image: d0bro/telegrambot:latest
     environment:
       TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
   db:
