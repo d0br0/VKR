@@ -1,7 +1,7 @@
 FROM golang:alpine
 ENV LANGUAGE="en"
-COPY . /app
-WORKDIR /app
+COPY . /code
+WORKDIR /code
 RUN go build -o mytelegrambot
 EXPOSE 8080/tcp
 CMD [ "./code" ]
