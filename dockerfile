@@ -2,7 +2,6 @@ FROM golang:alpine
 ENV LANGUAGE="en"
 COPY . /app
 WORKDIR /app
-RUN apk add --no-cache ca-certificates &&\
-    chmod +x code
+RUN go build -o mytelegrambot
 EXPOSE 80/tcp
 CMD [ "./code" ]
