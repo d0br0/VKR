@@ -1,19 +1,36 @@
-version: '3'
-
+version: "3.9"
 services:
-  bot:
-    build: .
-    image: d0bro/telegrambot:latest
+  # Контейнер с телеграм-ботом
+  mybot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - postgres
     environment:
-      TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
-  db:
-    image: postgres
+      - LANGUAGE=en
+    restart: unless-stopped
+
+  # Контейнер с PostgreSQL
+  postgres:
+    image: postgres:14.3-alpine
     environment:
-      CREATE_TABLE: "yes"
-      DB_SWITCH: "on" 
-      HOST: db
-      PORT: 5432
-      USER: postgres
-      PASSWORD: test
-      DBNAME: postgres
-      SSLMODE: disable
+      - POSTGRES_DB=telegram
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root1
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+# Создаем именованный том для данных PostgreSQL
+volumes:
+  pgdata:
+
+# Создаем сеть для взаимодействия контейнеров
+networks:
+  default:
+    driver: bridge
