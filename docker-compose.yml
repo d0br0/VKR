@@ -1,21 +1,21 @@
 version: "3.9"
 services:
-  # Контейнер с телеграм-ботом
-  mybot:
+  telegram-bot:
+    image: golang:latest
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - TELEGRAM_BOT_TOKEN=6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
+    volumes:
+      - .:/app
     ports:
-      - "80:80"
+      - "8080:8080"
     depends_on:
       - postgres
-    environment:
-      - LANGUAGE=en
-    restart: unless-stopped
 
-  # Контейнер с PostgreSQL
   postgres:
-    image: postgres:14.3-alpine
+    image: postgres:latest
     environment:
       - POSTGRES_DB=telegram
       - POSTGRES_USER=postgres
@@ -24,7 +24,6 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    restart: unless-stopped
 
 # Создаем именованный том для данных PostgreSQL
 volumes:
