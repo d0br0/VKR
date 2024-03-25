@@ -24,12 +24,3 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-# Создаем именованный том для данных PostgreSQL
-volumes:
-  pgdata:
-
-# Создаем сеть для взаимодействия контейнеров
-networks:
-  default:
-    driver: bridge
