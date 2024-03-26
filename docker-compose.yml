@@ -1,7 +1,7 @@
 version: '3'
 services:
   bot:
-    build: ./telegrambot
+    build: ./telegrambot.go
     environment:
       - TELEGRAM_TOKEN=6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
       - DB_HOST=db
