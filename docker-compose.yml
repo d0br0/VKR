@@ -8,8 +8,6 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=root1
       - DB_NAME=users
-    depends_on:
-      - db
   db:
     image: postgres:latest
     environment:
