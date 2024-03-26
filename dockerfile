@@ -1,20 +1,40 @@
-# Используйте официальный образ Golang как базовый
-FROM golang:1.16-alpine
+# Используем официальный образ Golang как базовый
+FROM golang:latest as builder
 
-# Установите рабочую директорию в контейнере
+# Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируйте go.mod и go.sum в рабочую директорию
-COPY go.mod go.sum ./
-
-# Загрузите все зависимости
-RUN go mod download
-
-# Копируйте исходный код в рабочую директорию
+# Копируем исходный код в контейнер
 COPY . .
 
-# Соберите приложение
-RUN go build -o main .
+# Скачиваем зависимости
+RUN go mod download
 
-# Запустите приложение
-CMD ["./main"]
+# Собираем бинарный файл
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
+# Используем образ alpine для финального контейнера из-за его малого размера
+FROM alpine:latest  
+
+# Устанавливаем рабочую директорию в контейнере
+WORKDIR /root/
+
+# Копируем бинарный файл из предыдущего шага
+COPY --from=builder /app/main .
+
+# Открываем порт, который будет использоваться ботом
+EXPOSE 8080
+
+# Запускаем бинарный файл
+CMD ["./code"]
+
+# Используем официальный образ PostgreSQL
+FROM postgres:latest
+
+# Устанавливаем переменные окружения для базы данных
+ENV POSTGRES_DB=dbname
+ENV POSTGRES_USER=user
+ENV POSTGRES_PASSWORD=password
+
+# Открываем порт для подключения к базе данных
+EXPOSE 5432
