@@ -1,26 +1,25 @@
-version: "3"
+version: '3'
 services:
-  telegram-bot:
-    image: golang:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - TELEGRAM_BOT_TOKEN=6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
+  bot:
+    build: ./bot
     volumes:
-      - .:/app
-    ports:
-      - "8080:8080"
+      - ./bot:/go/src/bot
+    command: go run main.go
+    environment:
+      - TELEGRAM_TOKEN=6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=root1
+      - DB_NAME=users
     depends_on:
-      - postgres
-
-  postgres:
+      - db
+  db:
     image: postgres:latest
     environment:
-      - POSTGRES_DB=telegram
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root1
+      - POSTGRES_DB=users
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - postgres_data:/var/lib/postgresql/data/
+volumes:
+  postgres_data:

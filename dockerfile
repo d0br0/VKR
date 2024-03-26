@@ -1,5 +1,20 @@
-FROM golang:latest
+# Используйте официальный образ Golang как базовый
+FROM golang:1.16-alpine
+
+# Установите рабочую директорию в контейнере
 WORKDIR /app
+
+# Копируйте go.mod и go.sum в рабочую директорию
+COPY go.mod go.sum ./
+
+# Загрузите все зависимости
+RUN go mod download
+
+# Копируйте исходный код в рабочую директорию
 COPY . .
-RUN go build -o mytelegrambot
-CMD ["./mytelegrambot"]
+
+# Соберите приложение
+RUN go build -o main .
+
+# Запустите приложение
+CMD ["./main"]
