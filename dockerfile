@@ -16,7 +16,7 @@ COPY go.sum ./
 RUN go mod download
 
 # Скопируйте исходный код в контейнер
-COPY /code/code .
+COPY . .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
