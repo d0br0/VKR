@@ -22,5 +22,6 @@ COPY . .
 RUN apk add --no-cache ca-certificates &&\
     chmod +x code
 
+EXPOSE 80/tcp
 # Запустите скомпилированный бинарный файл
 CMD [ "./code" ]
