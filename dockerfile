@@ -16,10 +16,11 @@ COPY go.sum ./
 RUN go mod download
 
 # Скопируйте исходный код в контейнер
-COPY . .
+COPY /code/code .
 
 # Скомпилируйте приложение для продакшена
-RUN go build -o main .
+RUN apk add --no-cache ca-certificates &&\
+    chmod +x code
 
 # Запустите скомпилированный бинарный файл
-CMD ["/app/main"]
+CMD [ "./code" ]
