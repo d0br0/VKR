@@ -19,9 +19,7 @@ RUN go mod download
 COPY . .
 
 # Скомпилируйте приложение для продакшена
-RUN apk add --no-cache ca-certificates &&\
-    chmod +x code
-
+RUN go build -o main .
 EXPOSE 80/tcp
 # Запустите скомпилированный бинарный файл
-CMD [ "./code" ]
+CMD [ "/app/main" ]
