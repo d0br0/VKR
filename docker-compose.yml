@@ -2,13 +2,12 @@ version: '3'
 services:
   bot:
     build: .
-    ports:
-      - "5432:5432"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       HOST: db
+      PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       SSLMODE: disable
