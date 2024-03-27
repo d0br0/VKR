@@ -16,4 +16,4 @@ COPY . .
 RUN go build -o main .
 
 # Запустите скомпилированный бинарный файл
-CMD ["./code"]
+CMD ["/app/main"]
