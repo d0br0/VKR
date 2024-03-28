@@ -7,7 +7,7 @@ services:
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
-      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      TELEGRAM_TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
       HOST: db
       SSLMODE: disable
     depends_on:
@@ -15,6 +15,6 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: telegram_bot_bd
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
