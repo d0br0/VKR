@@ -17,3 +17,4 @@ services:
       HOST: db
       PORT: 5432
       SSLMODE: disable
+      PASSWORD: password
