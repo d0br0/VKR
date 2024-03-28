@@ -1,5 +1,9 @@
 version: '3'
 services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
   bot:
     build: .
     ports:
@@ -8,12 +12,8 @@ services:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
       TELEGRAM_TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
-      POSTGRES_DB: telegram_bot_bd
-      POSTGRES_USER: user
+      DBNAME: telegram_bot_bd
+      USER: user
       HOST: db
-      SSLMODE: disable
       PORT: 5432
-  db:
-    image: postgres
-    environment:
-      POSTGRES_PASSWORD: password
+      SSLMODE: disable
