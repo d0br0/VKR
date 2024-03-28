@@ -10,8 +10,8 @@ services:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
       TELEGRAM_TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
-      DBNAME: telegram_bot_bd
-      USER: user
+      DBNAME: postgres
+      USER: postgres
       HOST: db
       PORT: 5432
       SSLMODE: disable
