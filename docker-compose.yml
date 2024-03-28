@@ -2,6 +2,8 @@ version: '3'
 services:
   bot:
     build: .
+    ports:
+      - "443"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"

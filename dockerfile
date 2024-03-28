@@ -32,7 +32,5 @@ COPY --from=builder /app/main .
 RUN apk add --no-cache ca-certificates &&\
     chmod +x main
 
-EXPOSE 8081/tcp
-
 # Запустите скомпилированный бинарный файл
 CMD [ "./main" ]
