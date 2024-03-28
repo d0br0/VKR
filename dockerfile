@@ -7,6 +7,8 @@ ARG POSTGRES_USER
 ARG POSTGRES_PASSWORD
 ARG POSTGRES_DB
 
+ENV LANGUAGE="en"
+
 # Скопируйте исходный код в контейнер
 COPY /code/code .
 
