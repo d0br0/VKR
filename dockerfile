@@ -8,13 +8,13 @@ ARG POSTGRES_PASSWORD
 ARG POSTGRES_DB
 
 # Скопируйте исходный код в контейнер
-COPY . .
+COPY /code/code .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x main
+    chmod +x code
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "./main" ]
+CMD [ "./code" ]
