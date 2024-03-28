@@ -12,7 +12,7 @@ ENV LANGUAGE="en"
 WORKDIR /app
 
 # Скопируйте исходный код в контейнер
-COPY /code/code .
+COPY . /code/app/
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
