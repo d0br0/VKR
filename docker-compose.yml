@@ -3,7 +3,7 @@ services:
   bot:
     build: .
     ports:
-      - "443"
+      - "80"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
