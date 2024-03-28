@@ -16,7 +16,7 @@ COPY . .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x app/main
+    chmod +x /app/main
 
 EXPOSE 80/tcp
 
