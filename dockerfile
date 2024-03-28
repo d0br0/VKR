@@ -31,6 +31,6 @@ COPY --from=builder /app/main .
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
     chmod +x main
-
+EXPOSE 80/tcp
 # Запустите скомпилированный бинарный файл
 CMD [ "./main" ]

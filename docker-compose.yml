@@ -6,8 +6,6 @@ services:
       POSTGRES_PASSWORD: password
   bot:
     build: .
-    ports:
-      - "80"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
