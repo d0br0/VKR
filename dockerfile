@@ -9,14 +9,16 @@ ARG POSTGRES_DB
 
 ENV LANGUAGE="en"
 
+WORKDIR /app
+
 # Скопируйте исходный код в контейнер
-COPY /code/code .
+COPY . .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x code
+    chmod +x app/.
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "./code" ]
+CMD [ "/app/." ]
