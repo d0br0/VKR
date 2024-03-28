@@ -3,7 +3,7 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD:
   bot:
     build: .
     environment:
@@ -15,4 +15,4 @@ services:
       HOST: db
       PORT: 5432
       SSLMODE: disable
-      PASSWORD: password
+      PASSWORD:
