@@ -1,5 +1,5 @@
 # Используйте официальный образ Golang как базовый
-FROM alpine:latest
+FROM alpine
 
 # Установите аргументы для переменных окружения из файла .env
 ARG TELEGRAM_TOKEN
