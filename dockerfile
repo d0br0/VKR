@@ -19,4 +19,4 @@ RUN apk add --no-cache ca-certificates &&\
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "app/main" ]
+CMD [ "/app/main" ]
