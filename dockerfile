@@ -16,9 +16,9 @@ COPY . .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x /app/code
+    chmod +x /app/vkr
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "/app/code" ]
+CMD [ "/app/vkr" ]
