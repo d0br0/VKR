@@ -16,9 +16,9 @@ COPY . .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x /app/vkr
+    chmod +x /app/telegrambot
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "/app/vkr" ]
+CMD [ "/app/telegrambot" ]
