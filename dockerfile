@@ -2,7 +2,10 @@
 FROM golang:latest as builder
 
 # Установите аргументы для переменных окружения из файла .env
-
+ARG TELEGRAM_TOKEN
+ARG POSTGRES_USER
+ARG POSTGRES_PASSWORD
+ARG POSTGRES_DB
 
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app

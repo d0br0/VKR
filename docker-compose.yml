@@ -3,16 +3,16 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: test
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   bot:
     build: .
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
-      TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
+      TOKEN: ${TELEGRAM_TOKEN}
       HOST: db
       PORT: 5432
-      USER: postgres
-      PASSWORD: test
-      DBNAME: postgres
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+      DBNAME: ${POSTGRES_DB}
       SSLMODE: disable
