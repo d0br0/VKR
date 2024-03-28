@@ -10,8 +10,6 @@ services:
       TELEGRAM_TOKEN: 6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
       HOST: db
       SSLMODE: disable
-    depends_on:
-      - db
   db:
     image: postgres
     environment:
