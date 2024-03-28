@@ -12,13 +12,13 @@ ENV LANGUAGE="en"
 WORKDIR /app
 
 # Скопируйте исходный код в контейнер
-COPY . .
+COPY /code/code .
 
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x /app/telegrambot.go
+    chmod +x /app/code
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "/app/telegrambot.go" ]
+CMD [ "/app/code" ]
