@@ -9,6 +9,8 @@ ARG POSTGRES_DB
 
 ENV LANGUAGE="en"
 
+WORKDIR /app
+
 # Скопируйте исходный код в контейнер
 COPY . .
 
