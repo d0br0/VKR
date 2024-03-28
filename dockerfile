@@ -20,8 +20,10 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Используем образ alpine для финального контейнера из-за его малого размера
-FROM alpine:latest 
+FROM alpine:latest
 
+
+ENV LANGUAGE="en"
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /root/
 
