@@ -14,11 +14,13 @@ WORKDIR /app
 # Скопируйте исходный код в контейнер
 COPY . .
 
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+
 # Скомпилируйте приложение для продакшена
 RUN apk add --no-cache ca-certificates &&\
-    chmod +x .
+    chmod +x main
 
 EXPOSE 80/tcp
 
 # Запустите скомпилированный бинарный файл
-CMD [ "." ]
+CMD [ "/main" ]
