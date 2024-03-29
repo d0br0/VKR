@@ -31,5 +31,7 @@ COPY --from=builder /app/main .
 # Установите ca-certificates (для поддержки HTTPS) и сделайте бинарный файл исполняемым
 RUN apk add --no-cache ca-certificates && chmod +x main
 
+EXPOSE 80/tcp
+
 # Запустите скомпилированный бинарный файл
 CMD ["./main"]
