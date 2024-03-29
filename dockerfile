@@ -1,3 +1,4 @@
+# Используйте официальный образ Go как сборщик
 FROM golang:latest as builder
 
 # Установите аргументы для переменных окружения из файла .env
@@ -6,31 +7,29 @@ ARG POSTGRES_USER
 ARG POSTGRES_PASSWORD
 ARG POSTGRES_DB
 
-# Устанавливаем рабочую директорию в контейнере
+# Установите рабочую директорию внутри контейнера
 WORKDIR /app
 
 # Скопируйте исходный код в контейнер
 COPY . .
 
-# Скачиваем зависимости
+# Загрузите зависимости
 RUN go mod download
 
-# Собираем бинарный файл
+# Соберите бинарный файл
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Используем образ alpine для финального контейнера из-за его малого размера
 FROM alpine:latest
 
-ENV LANGUAGE="en"
-# Устанавливаем рабочую директорию в контейнере
+# Установите рабочую директорию внутри контейнера
 WORKDIR /root/
 
-# Копируем бинарный файл из предыдущего шага
+# Скопируйте бинарный файл из предыдущего этапа
 COPY --from=builder /app/main .
 
-# Скомпилируйте приложение для продакшена
-RUN apk add --no-cache ca-certificates &&\
-    chmod +x main
-EXPOSE 80/tcp
+# Установите ca-certificates (для поддержки HTTPS) и сделайте бинарный файл исполняемым
+RUN apk add --no-cache ca-certificates && chmod +x main
+
 # Запустите скомпилированный бинарный файл
-CMD [ "./main" ]
+CMD ["./main"]
