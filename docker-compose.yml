@@ -3,7 +3,6 @@ services:
   telegram-bot:
     build:
       context: .
-      dockerfile: Dockerfile.telegram-bot
     ports:
       - "8080:8080"
     environment:
