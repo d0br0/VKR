@@ -1,20 +1,18 @@
-version: '3.8'
+version: '3'
 services:
-  telegram-bot:
-    build:
-      context: .
-    ports:
-      - "8080:8080"
-    environment:
-      - TELEGRAM_BOT_TOKEN: ${TELEGRAM_TOKEN}
-    depends_on:
-      - db
-
   db:
-    image: postgres:13
+    image: postgres
     environment:
-      - POSTGRES_USER: ${POSTGRES_USER}
-      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      - POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  bot:
+    build: .
+    environment:
+      CREATE_TABLE: "yes"
+      DB_SWITCH: "on"
+      TOKEN: ${TELEGRAM_TOKEN}
+      HOST: db
+      PORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      USER: ${POSTGRES_USER}
+      DBNAME: ${POSTGRES_DB}
+      SSLMODE: disable
