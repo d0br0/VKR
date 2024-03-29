@@ -11,7 +11,7 @@ ARG POSTGRES_DB
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
 
-# Копируем исходный код на Go в контейнер
+# Скопируйте исходный код в контейнер
 COPY . .
 
 # Собираем Go-приложение
@@ -26,11 +26,6 @@ CMD ["./telegram-bot"]
 # Dockerfile для контейнера с базой данных (пример: PostgreSQL)
 # Используем официальный образ PostgreSQL в качестве базового образа
 FROM postgres:13
-
-# Устанавливаем переменные окружения для базы данных
-ENV POSTGRES_USER myuser
-ENV POSTGRES_PASSWORD mypassword
-ENV POSTGRES_DB mydb
 
 # Открываем стандартный порт PostgreSQL
 EXPOSE 5432
