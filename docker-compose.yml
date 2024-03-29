@@ -3,20 +3,20 @@ services:
   db:
     image: postgres
     environment:
-      PASSWORD: ${POSTGRES_PASSWORD}
-      USER: ${POSTGRES_USER}
-      DBNAME: ${POSTGRES_DB}
+      -  POSTGRES_PASSWORD=test
+      -  USER: ${POSTGRES_USER}
+      -  DBNAME: ${POSTGRES_DB}
   bot:
     build: .
     environment:
-      CREATE_TABLE: "yes"
-      DB_SWITCH: "on"
-      TOKEN: ${TELEGRAM_TOKEN}
-      HOST: db
-      PORT: 5432
-      PASSWORD: ${POSTGRES_PASSWORD}
-      USER: ${POSTGRES_USER}
-      DBNAME: ${POSTGRES_DB}
-      SSLMODE: disable
+      -  POSTGRES_PASSWORD=test
+      -  CREATE_TABLE="yes"
+      -  DB_SWITCH="on"
+      -  TELEGRAM_TOKEN=6732348036:AAEe16L4I5iMOrV3bLVY1f2cKTDMyytTe9c
+      -  HOST: db
+      -  PORT: 5432
+      -  USER: ${POSTGRES_USER}
+      -  DBNAME: ${POSTGRES_DB}
+      -  SSLMODE: disable
     depends_on:
       - db
