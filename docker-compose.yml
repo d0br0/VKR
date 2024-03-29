@@ -12,8 +12,7 @@ services:
       TOKEN: ${TELEGRAM_TOKEN}
       HOST: db
       PORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
       DBNAME: ${POSTGRES_DB}
       SSLMODE: disable
-      depends_on:
-      - db
