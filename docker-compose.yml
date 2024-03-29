@@ -13,6 +13,7 @@ services:
       HOST: db
       PORT: 5432
       USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DBNAME: ${POSTGRES_DB}
       SSLMODE: disable
+      depends_on:
+      - db
