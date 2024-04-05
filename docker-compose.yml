@@ -3,6 +3,8 @@ services:
   db:
     container_name: db
     image: postgres
+    env_file:
+      - .env
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
