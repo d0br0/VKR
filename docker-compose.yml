@@ -8,11 +8,6 @@ services:
       DBNAME: ${POSTGRES_DB}
   bot:
     build: .
-    target: release
-    env_file:
-      - .env
-    ports:
-      - "8080:443"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
