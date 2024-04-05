@@ -1,13 +1,28 @@
-version: '3.4'
-
+version: '3'
 services:
-
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: test
-
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      USER: ${POSTGRES_USER}
+      DBNAME: ${POSTGRES_DB}
   bot:
-    image: redis:alpine
+    build:
+    context: .
+    target: release
+    env_file:
+      - .env
+    ports:
+      - "8080:443"
     environment:
-      ghcr.io/bots-house/docker-telegram-bot-api:latest
+      CREATE_TABLE: "yes"
+      DB_SWITCH: "on"
+      TOKEN: ${TELEGRAM_TOKEN}
+      HOST: db
+      PORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      USER: ${POSTGRES_USER}
+      DBNAME: ${POSTGRES_DB}
+      SSLMODE: disable
+    depends_on:
+      - db
