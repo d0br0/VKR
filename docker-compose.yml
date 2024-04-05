@@ -8,6 +8,8 @@ services:
       DBNAME: ${POSTGRES_DB}
   bot:
     build: .
+    env_file:
+      - .env
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
