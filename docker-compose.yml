@@ -1,13 +1,16 @@
 version: '3'
 services:
   db:
+    container_name: db
     image: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
       DBNAME: ${POSTGRES_DB}
   bot:
-    build: .
+    container_name: bot
+    build:
+      context: .
     env_file:
       - .env
     environment:
