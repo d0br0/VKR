@@ -22,7 +22,7 @@ var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=
 func collectData(username string, chatid int64, message string, answer []string) error {
 
 	//Подключаемся к БД
-	db, err := sql.Open("postgres", dbInfo)
+	db, err := sql.Open(user, dbInfo)
 	if err != nil {
 		return err
 	}
