@@ -6,8 +6,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
       DBNAME: ${POSTGRES_DB}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -17,8 +15,6 @@ services:
       - db
     command: sh -c 'sleep 35'
     restart: on-failure
-    volumes:
-      - pgdata
     env_file:
       - .env
     environment:
