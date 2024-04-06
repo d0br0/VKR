@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -22,11 +23,16 @@ var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=
 func collectData(username string, chatid int64, message string, answer []string) error {
 
 	//Подключаемся к БД
-	db, err := sql.Open(user, dbInfo)
+	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//Конвертируем срез с ответом в строку
 	answ := strings.Join(answer, ", ")
