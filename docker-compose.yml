@@ -1,18 +1,28 @@
 version: '3'
 services:
   db:
-    container_name: db
     image: postgres
-    env_file:
-      - .env
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
       DBNAME: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - postgres
   bot:
-    container_name: bot
-    build:
-      context: .
+    build: .
+    depends_on:
+      - db
+    command: sh -c 'sleep 35'
+    restart: on-failure
+    volumes:
+      - pgdata
+    networks:
+      - postgres
     env_file:
       - .env
     environment:
@@ -21,9 +31,4 @@ services:
       TOKEN: ${TELEGRAM_TOKEN}
       HOST: db
       PORT: 5432
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      USER: ${POSTGRES_USER}
-      DBNAME: ${POSTGRES_DB}
-      SSLMODE: disable
-    depends_on:
-      - db
+      SSLMODE: disable    

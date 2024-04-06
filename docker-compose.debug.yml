@@ -6,23 +6,29 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       USER: ${POSTGRES_USER}
       DBNAME: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - postgres
   bot:
-    build:
-    context: .
-    target: release
+    build: .
+    depends_on:
+      - db
+    command: sh -c 'sleep 35'
+    restart: on-failure
+    volumes:
+      - pgdata
+    networks:
+      - postgres
     env_file:
       - .env
-    ports:
-      - "8080:443"
     environment:
       CREATE_TABLE: "yes"
       DB_SWITCH: "on"
       TOKEN: ${TELEGRAM_TOKEN}
       HOST: db
       PORT: 5432
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      USER: ${POSTGRES_USER}
-      DBNAME: ${POSTGRES_DB}
-      SSLMODE: disable
-    depends_on:
-      - db
+      SSLMODE: disable    
