@@ -11,8 +11,6 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-    networks:
-      - postgres
   bot:
     build: .
     depends_on:
@@ -21,8 +19,6 @@ services:
     restart: on-failure
     volumes:
       - pgdata
-    networks:
-      - postgres
     env_file:
       - .env
     environment:
