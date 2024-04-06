@@ -12,7 +12,7 @@ import (
 func telegramBot() {
 
 	//Создаем бота
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		panic(err)
 	}
