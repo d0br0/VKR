@@ -13,7 +13,7 @@ import (
 var host = os.Getenv("HOST")
 var port = os.Getenv("PORT")
 var user = os.Getenv("POSTGRES_USER")
-var password = os.Getenv("POSTGRES_PASSWORD")
+var password = "testing"
 var dbname = os.Getenv("POSTGRES_DB")
 var sslmode = os.Getenv("SSLMODE")
 
