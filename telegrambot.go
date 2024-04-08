@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"time"
@@ -14,7 +15,7 @@ func telegramBot() {
 	//Создаем бота
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	//Устанавливаем время обновления
@@ -28,17 +29,19 @@ func telegramBot() {
 		if update.Message == nil {
 			continue
 		}
-
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кем ты являешься:")
 		//Проверяем что от пользователья пришло именно текстовое сообщение
 		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
 
 			switch update.Message.Text {
-			case "/start":
-
-				//Отправлем сообщение
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Hi, i'm a wikipedia bot, i can search information in a wikipedia, send me something what you want find in Wikipedia.")
-				bot.Send(msg)
-
+			case "меню":
+				var keyboard = tgbotapi.NewInlineKeyboardMarkup(
+					tgbotapi.NewInlineKeyboardRow(
+						tgbotapi.NewInlineKeyboardButtonData("Действие 1", "action1"),
+						tgbotapi.NewInlineKeyboardButtonData("Действие 2", "action2"),
+					),
+				)
+				msg.ReplyMarkup = keyboard
 			case "/number_of_users":
 
 				if os.Getenv("DB_SWITCH") == "on" {
