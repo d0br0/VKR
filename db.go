@@ -13,7 +13,7 @@ import (
 var host = os.Getenv("HOST")
 var port = os.Getenv("PORT")
 var user = os.Getenv("POSTGRES_USER")
-var password = "testing"
+var password = os.Getenv("POSTGRES_PASSWORD")
 var dbname = os.Getenv("POSTGRES_DB")
 var sslmode = os.Getenv("SSLMODE")
 
@@ -59,7 +59,7 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаем таблицу users
-	if _, err = db.Exec(`CREATE TABLE users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
 		return err
 	}
 
