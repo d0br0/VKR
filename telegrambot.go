@@ -46,16 +46,16 @@ func telegramBot() {
 			}
 		}
 	}
-
 }
 
-func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options ...string) {
+func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options []string) {
 	msg := tgbotapi.NewMessage(chatID, message)
-	var rows []tgbotapi.KeyboardButtonRow
+	var keyboard [][]tgbotapi.KeyboardButton
 	for _, option := range options {
-		rows = append(rows, tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton(option)))
+		row := []tgbotapi.KeyboardButton{tgbotapi.NewKeyboardButton(option)}
+		keyboard = append(keyboard, row)
 	}
-	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
+	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(keyboard...)
 	bot.Send(msg)
 }
 
