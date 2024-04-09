@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -37,9 +38,33 @@ func telegramBot() {
 			case "Студент":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование QR-code", "Вернуться в главное меню"})
 			case "Администратор":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание студента", "Вернуться в главное меню", "Число пользователей"})
 			case "Вернуться в главное меню":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
+			case "Число пользователей":
+				if os.Getenv("DB_SWITCH") == "on" {
+
+					//Присваиваем количество пользоватьелей использовавших бота в num переменную
+					num, err := getNumberOfUsers()
+					if err != nil {
+
+						//Отправлем сообщение
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка базы данных")
+						bot.Send(msg)
+					}
+
+					//Создаем строку которая содержит колличество пользователей использовавших бота
+					ans := fmt.Sprintf("%d Число пользователей:", num)
+
+					//Отправлем сообщение
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, ans)
+					bot.Send(msg)
+				} else {
+
+					//Отправлем сообщение
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "База данных не подключена, я не могу сообщить число пользователей :(")
+					bot.Send(msg)
+				}
 			default:
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
 				bot.Send(msg)
