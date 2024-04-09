@@ -29,7 +29,7 @@ func telegramBot() {
 		}
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
-			case "Вернуться в главное меню":
+			case "/start":
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй, "+update.Message.From.FirstName+"! Я бот для учёта посещаемости. Выбери кто ты.")
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 					tgbotapi.NewKeyboardButtonRow(
@@ -46,8 +46,11 @@ func telegramBot() {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Создание групп"),
 						tgbotapi.NewKeyboardButton("Отметить присутствующих"),
+						tgbotapi.NewKeyboardButton("Создание группы"),
+					),
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Создание студента"),
 						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
 					),
 				)
@@ -66,6 +69,10 @@ func telegramBot() {
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 					tgbotapi.NewKeyboardButtonRow(
 						tgbotapi.NewKeyboardButton("Ввести название учебного заведения"),
+						tgbotapi.NewKeyboardButton("Создание группы"),
+					),
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Создание студента"),
 						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
 					),
 				)
