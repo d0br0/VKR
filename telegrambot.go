@@ -27,16 +27,54 @@ func telegramBot() {
 		if update.Message == nil {
 			continue
 		}
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.")
-		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton("Преподаватель"),
-				tgbotapi.NewKeyboardButton("Студент"),
-			),
-		)
-
-		bot.Send(msg)
+		if update.Message.IsCommand() {
+			switch update.Message.Command() {
+			case "":
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй, "+update.Message.From.FirstName+"! Я бот для учёта посещаемости. Выбери кто ты.")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Преподаватель"),
+						tgbotapi.NewKeyboardButton("Студент"),
+						tgbotapi.NewKeyboardButton("Администратор"),
+					),
+				)
+				bot.Send(msg)
+			}
+		} else {
+			switch update.Message.Text {
+			case "Преподаватель":
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Создание групп"),
+						tgbotapi.NewKeyboardButton("Отметить присутствующих"),
+						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
+					),
+				)
+				bot.Send(msg)
+			case "Студент":
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Сканирование QR-code"),
+						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
+					),
+				)
+				bot.Send(msg)
+			case "Администратор":
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Ввести название учебного заведения"),
+						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
+					),
+				)
+				bot.Send(msg)
+			default:
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
+				bot.Send(msg)
+			}
+		}
 	}
 }
 
