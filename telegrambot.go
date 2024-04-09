@@ -27,71 +27,36 @@ func telegramBot() {
 		if update.Message == nil {
 			continue
 		}
-		if update.Message.IsCommand() {
-			if update.Message.Command() == "/start" {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Преподаватель"),
-						tgbotapi.NewKeyboardButton("Студент"),
-						tgbotapi.NewKeyboardButton("Администратор"),
-					),
-				)
-				bot.Send(msg)
-			}
+
+		if update.Message.IsCommand() && update.Message.Command() == "/start" {
+			sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
 		} else {
 			switch update.Message.Text {
 			case "Преподаватель":
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Отметить присутствующих"),
-						tgbotapi.NewKeyboardButton("Создание группы"),
-					),
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Создание студента"),
-						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
-					),
-				)
-				bot.Send(msg)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 			case "Студент":
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Сканирование QR-code"),
-						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
-					),
-				)
-				bot.Send(msg)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование QR-code", "Вернуться в главное меню"})
 			case "Администратор":
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Ввести название учебного заведения"),
-						tgbotapi.NewKeyboardButton("Создание группы"),
-					),
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Создание студента"),
-						tgbotapi.NewKeyboardButton("Вернуться в главное меню"),
-					),
-				)
-				bot.Send(msg)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 			case "Вернуться в главное меню":
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
-				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
-					tgbotapi.NewKeyboardButtonRow(
-						tgbotapi.NewKeyboardButton("Преподаватель"),
-						tgbotapi.NewKeyboardButton("Студент"),
-						tgbotapi.NewKeyboardButton("Администратор"),
-					),
-				)
-				bot.Send(msg)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
 			default:
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
 				bot.Send(msg)
 			}
 		}
 	}
+
+}
+
+func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options ...string) {
+	msg := tgbotapi.NewMessage(chatID, message)
+	var rows []tgbotapi.KeyboardButtonRow
+	for _, option := range options {
+		rows = append(rows, tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton(option)))
+	}
+	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
+	bot.Send(msg)
 }
 
 func main() {
