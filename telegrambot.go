@@ -28,8 +28,7 @@ func telegramBot() {
 			continue
 		}
 		if update.Message.IsCommand() {
-			switch update.Message.Command() {
-			case "/start":
+			if update.Message.Command() == "/start" {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй, "+update.Message.From.FirstName+"! Я бот для учёта посещаемости. Выбери кто ты.")
 				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 					tgbotapi.NewKeyboardButtonRow(
