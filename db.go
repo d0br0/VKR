@@ -63,13 +63,13 @@ func createTable() error {
 		return err
 	}
 
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine(ID SERIAL PRIMARY KEY, DATE, TIME, ID STUDENT);`); err != nil {
-		return err
-	}
+	//if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine(ID SERIAL PRIMARY KEY, DATE, TIME, ID STUDENT);`); err != nil {
+	//return err
+	//}
 
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS group(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSROOMTEACHER TEXT); `); err != nil {
-		return err
-	}
+	//if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS group(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSROOMTEACHER TEXT); `); err != nil {
+	//return err
+	//}
 
 	return nil
 }
