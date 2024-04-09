@@ -77,6 +77,16 @@ func telegramBot() {
 					),
 				)
 				bot.Send(msg)
+			case "Вернуться в главное меню":
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете действие:")
+				msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+					tgbotapi.NewKeyboardButtonRow(
+						tgbotapi.NewKeyboardButton("Преподаватель"),
+						tgbotapi.NewKeyboardButton("Студент"),
+						tgbotapi.NewKeyboardButton("Администратор"),
+					),
+				)
+				bot.Send(msg)
 			default:
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
 				bot.Send(msg)
