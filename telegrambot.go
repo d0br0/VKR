@@ -28,15 +28,11 @@ func telegramBot() {
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "/start")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.")
 		msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton("Button 1"),
-				tgbotapi.NewKeyboardButton("Button 2"),
-			),
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton("Button 3"),
-				tgbotapi.NewKeyboardButton("Button 4"),
+				tgbotapi.NewKeyboardButton("Преподаватель"),
+				tgbotapi.NewKeyboardButton("Студент"),
 			),
 		)
 
