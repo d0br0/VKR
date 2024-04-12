@@ -9,7 +9,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var adminPassword = os.Getenv("ADMIN_PASSWORD")
+var adminPassword string = "1029384756"
 
 func telegramBot() {
 
