@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -31,10 +32,11 @@ func telegramBot() {
 			continue
 		}
 
-		if update.Message.IsCommand() && update.Message.Command() == "/start" {
-			sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
-		} else {
+		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
+
 			switch update.Message.Text {
+			case "/start":
+				sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
 			case "Преподаватель":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 			case "Студент":
