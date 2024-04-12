@@ -58,18 +58,18 @@ func createTable() error {
 	}
 	defer db.Close()
 
-	//Создаем таблицу users
+	//Создаём таблицу users
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
 		return err
 	}
-
-	//if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine(ID SERIAL PRIMARY KEY, DATE, TIME, ID STUDENT);`); err != nil {
-	//return err
-	//}
-
-	//if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS group(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSROOMTEACHER TEXT); `); err != nil {
-	//return err
-	//}
+	//Создаём таблицу magazine
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine(ID SERIAL PRIMARY KEY, DATE DATE, TIME TIME, STUDENT_ID INT);`); err != nil {
+		return err
+	}
+	//Создаём таблицу group
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS "group"(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSROOMTEACHER TEXT); `); err != nil {
+		return err
+	}
 
 	return nil
 }

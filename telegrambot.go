@@ -9,6 +9,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var adminPassword = os.Getenv("ADMIN_PASSWORD")
+
 func telegramBot() {
 
 	//Создаем бота
@@ -38,6 +40,8 @@ func telegramBot() {
 			case "Студент":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование QR-code", "Вернуться в главное меню"})
 			case "Администратор":
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Пожалуйста, введите пароль администратора."))
+			case adminPassword:
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание студента", "Вернуться в главное меню", "Число пользователей"})
 			case "Вернуться в главное меню":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
