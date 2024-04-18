@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -20,7 +19,7 @@ var sslmode = os.Getenv("SSLMODE")
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
 // Собираем данные полученные ботом
-func collectData(username string, chatid int64, message string, answer []string) error {
+func collectData(username string, chatid int64, answer string) error {
 
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
@@ -34,14 +33,11 @@ func collectData(username string, chatid int64, message string, answer []string)
 		log.Fatal(err)
 	}
 
-	//Конвертируем срез с ответом в строку
-	answ := strings.Join(answer, ", ")
-
 	//Создаем SQL запрос
 	data := `INSERT INTO users(username, chat_id, message, answer) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, `@`+username, chatid, message, answ); err != nil {
+	if _, err = db.Exec(data, `@`+username, chatid, answer); err != nil {
 		return err
 	}
 
@@ -70,7 +66,7 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, ANSWER TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
