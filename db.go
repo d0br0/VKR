@@ -48,7 +48,18 @@ func collectData(username string, chatid int64, message string, answer []string)
 	return nil
 }
 
-// Создаем таблицу users в БД при подключении к ней
+func creategroup() error {
+
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	return nil
+}
+
+// Создаем таблицы: users, magazine, group в БД при подключении к ней
 func createTable() error {
 
 	//Подключаемся к БД
