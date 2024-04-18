@@ -19,7 +19,7 @@ var sslmode = os.Getenv("SSLMODE")
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
 // Собираем данные полученные ботом
-func collectData(username string, chatid int64, answer string) error {
+func collectDataUsers(username string, chatid int64, answer string) error {
 
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
@@ -34,7 +34,7 @@ func collectData(username string, chatid int64, answer string) error {
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(username, chat_id, message, answer) VALUES($1, $2, $3, $4);`
+	data := `INSERT INTO users(username, chat_id, answer) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
 	if _, err = db.Exec(data, `@`+username, chatid, answer); err != nil {
@@ -44,7 +44,7 @@ func collectData(username string, chatid int64, answer string) error {
 	return nil
 }
 
-func creategroup() error {
+func collectDataGroup() error {
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {

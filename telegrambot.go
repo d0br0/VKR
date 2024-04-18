@@ -49,6 +49,8 @@ func telegramBot() {
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
+			case "Создание группы":
+
 			default:
 				sendDB(update, bot)
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
@@ -99,7 +101,7 @@ func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if os.Getenv("DB_SWITCH") == "on" {
 
 		//Отправляем username, chat_id, message, answer в БД
-		if err := collectData(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text); err != nil {
+		if err := collectDataUsers(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text); err != nil {
 
 			//Отправлем сообщение
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
