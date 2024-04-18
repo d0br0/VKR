@@ -50,7 +50,7 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-
+				makeGroup()
 			default:
 				sendDB(update, bot)
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
@@ -71,7 +71,7 @@ func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options []stri
 	bot.Send(msg)
 }
 
-func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
 
 		//Присваиваем количество пользоватьелей использовавших бота в num переменную
@@ -95,9 +95,15 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "База данных не подключена, я не могу сообщить число пользователей :(")
 		bot.Send(msg)
 	}
+	return nil
 }
 
-func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func makeGroup() error {
+
+	return nil
+}
+
+func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
 
 		//Отправляем username, chat_id, message, answer в БД
@@ -108,6 +114,7 @@ func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			bot.Send(msg)
 		}
 	}
+	return nil
 }
 
 func main() {
