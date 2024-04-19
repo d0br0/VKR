@@ -99,32 +99,43 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	var classLeader = ""
-	var groupName = ""
+
+	var groupName string
+	var classLeader string
+	var step string
 	if os.Getenv("DB_SWITCH") == "on" {
-		if groupName == "" {
+		if step == "" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
 			bot.Send(msg)
-			groupName = update.Message.Text
+			step = "groupName"
 			return nil
 		}
-		if classLeader == "" {
+
+		if step == "groupName" {
+			groupName = update.Message.Text
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bot.Send(msg)
 			classLeader = update.Message.Text
 			return nil
 		}
-		if err := collectDataGroup(groupName, classLeader); err != nil {
 
-			//Отправлем сообщение
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
-			bot.Send(msg)
+		if step == "classLeader" {
+			classLeader = update.Message.Text
+
+			if err := collectDataGroup(groupName, classLeader); err != nil {
+
+				//Отправлем сообщение
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
+				bot.Send(msg)
+			} else {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Группа успешно создана!")
+				bot.Send(msg)
+			}
+
+			groupName = ""
+			classLeader = ""
+			step = ""
 		}
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Группа успешно создана!")
-		bot.Send(msg)
-
-		groupName = ""
-		classLeader = ""
 	}
 	return nil
 }
