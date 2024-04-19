@@ -99,22 +99,27 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	var groupName = ""
 	var classLeader = ""
+	var groupName = ""
 	if os.Getenv("DB_SWITCH") == "on" {
-
 		if groupName == "" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
 			bot.Send(msg)
 			groupName = update.Message.Text
+			return nil
 		}
-
 		if classLeader == "" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bot.Send(msg)
 			classLeader = update.Message.Text
+			return nil
 		}
+		if err := collectDataGroup(groupName, classLeader); err != nil {
 
+			//Отправлем сообщение
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
+			bot.Send(msg)
+		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Группа успешно создана!")
 		bot.Send(msg)
 
