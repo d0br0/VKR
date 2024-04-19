@@ -50,7 +50,7 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				makeGroup()
+				makeGroup(update, bot)
 			default:
 				sendDB(update, bot)
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
@@ -98,8 +98,29 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func makeGroup() error {
+func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	var groupName = ""
+	var classLeader = ""
+	if os.Getenv("DB_SWITCH") == "on" {
 
+		if groupName == "" {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
+			bot.Send(msg)
+			groupName = update.Message.Text
+		}
+
+		if classLeader == "" {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
+			bot.Send(msg)
+			classLeader = update.Message.Text
+		}
+
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Группа успешно создана!")
+		bot.Send(msg)
+
+		groupName = ""
+		classLeader = ""
+	}
 	return nil
 }
 

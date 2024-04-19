@@ -44,13 +44,27 @@ func collectDataUsers(username string, chatid int64, answer string) error {
 	return nil
 }
 
-func collectDataGroup() error {
+func collectDataGroup(db *sql.DB, groupName string, classLeader string) error {
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// SQL запрос для добавления новой группы в таблицу "group"
+	query := `INSERT INTO "group" (name, class_leader) VALUES ($1, $2)`
+
+	// Выполнение SQL запроса
+
+	if _, err := db.Exec(query, groupName, classLeader); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -74,7 +88,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS "group"(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSROOMTEACHER TEXT); `); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS "group"(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSLEADER TEXT); `); err != nil {
 		return err
 	}
 
