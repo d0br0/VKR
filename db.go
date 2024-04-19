@@ -44,7 +44,7 @@ func collectDataUsers(username string, chatid int64, answer string) error {
 	return nil
 }
 
-func collectDataGroup(db *sql.DB, groupName string, classLeader string) error {
+func collectDataGroup(groupName string, classLeader string) error {
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
