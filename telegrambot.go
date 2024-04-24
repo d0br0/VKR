@@ -105,15 +105,13 @@ func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
 			bot.Send(msg)
 			step = "groupName"
-			groupName = update.Message.Text
-			return nil
 		}
 
 		if step == "groupName" {
+			groupName = update.Message.Text
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bot.Send(msg)
 			step = "classLeader"
-			return nil
 		}
 
 		if step == "classLeader" {
