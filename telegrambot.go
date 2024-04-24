@@ -53,8 +53,6 @@ func telegramBot() {
 				makeGroup(update, bot)
 			default:
 				sendDB(update, bot)
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "На такую комманду я не запрограммирован..")
-				bot.Send(msg)
 			}
 		}
 	}
