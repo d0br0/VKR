@@ -99,7 +99,6 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-
 	var groupName string
 	var classLeader string
 	var step string
@@ -115,7 +114,7 @@ func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			groupName = update.Message.Text
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bot.Send(msg)
-			classLeader = update.Message.Text
+			step = "classLeader"
 			return nil
 		}
 
@@ -123,7 +122,6 @@ func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 			classLeader = update.Message.Text
 
 			if err := collectDataGroup(groupName, classLeader); err != nil {
-
 				//Отправлем сообщение
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
 				bot.Send(msg)
