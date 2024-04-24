@@ -34,7 +34,7 @@ func collectDataUsers(username string, chatid int64, answer string) error {
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(username, chat_id, answer) VALUES($1, $2, $3, $4);`
+	data := `INSERT INTO users(username, chat_id, answer) VALUES($1, $2, $3);`
 
 	//Выполняем наш SQL запрос
 	if _, err = db.Exec(data, `@`+username, chatid, answer); err != nil {
@@ -57,7 +57,7 @@ func collectDataGroup(groupName string, classLeader string) error {
 	}
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(groupName, classLeader) VALUES ($1, $2)`
+	query := `INSERT INTO structure(group_name, class_leader) VALUES ($1, $2)`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, groupName, classLeader); err != nil {
@@ -86,7 +86,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, NAMEGROUP TEXT, CLASSLEADER TEXT); `); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, NAME_GROUP TEXT, CLASS_LEADER TEXT); `); err != nil {
 		return err
 	}
 
