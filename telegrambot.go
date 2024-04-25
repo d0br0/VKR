@@ -10,10 +10,19 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var bs = &BotState{}
+var us = &UserState{}
+var gs = &GroupState{}
 var adminPassword string = "1029384756"
 
-type BotState struct {
+type UserState struct {
+	username  string
+	role      string
+	fio       string
+	groupName string
+	step      string
+}
+
+type GroupState struct {
 	groupName   string
 	classLeader string
 	step        string
@@ -51,15 +60,15 @@ func telegramBot() {
 			case "Администратор":
 				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Пожалуйста, введите пароль администратора."))
 			case adminPassword:
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание студента", "Вернуться в главное меню", "Число пользователей"})
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Ввести название учебного заведения", "Создание группы", "Создание пользователя", "Вернуться в главное меню", "Число пользователей"})
 			case "Вернуться в главное меню":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				bs.makeGroup(update, bot)
-			default:
-				sendDB(update, bot)
+				gs.makeGroup(update, bot)
+			case "Создание пользователя":
+				us.makeUser(update, bot)
 			}
 		}
 	}
@@ -103,27 +112,74 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
-		if bs.step == "" {
+		if gs.step == "" {
 			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
-			bs.step = "groupName"
-		} else if bs.step == "groupName" {
+			gs.step = "groupName"
+		} else if gs.step == "groupName" {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
 			}
-			bs.groupName = update.Message.Text
+			gs.groupName = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
-			bs.step = "classLeader"
-		} else if bs.step == "classLeader" {
+			gs.step = "classLeader"
+		} else if gs.step == "classLeader" {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
 				return nil
 			}
-			bs.classLeader = update.Message.Text
+			gs.classLeader = update.Message.Text
 
-			if err := collectDataGroup(bs.groupName, bs.classLeader); err != nil {
+			if err := collectDataGroup(gs.groupName, gs.classLeader); err != nil {
+				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				return fmt.Errorf("collectDataGroup failed: %w", err)
+			} else {
+				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
+			}
+
+		}
+	}
+	return nil
+}
+
+func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	if os.Getenv("DB_SWITCH") == "on" {
+		if us.step == "" {
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+			us.step = "username"
+		} else if us.step == "username" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
+				return nil
+			}
+			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
+			us.step = "role"
+		} else if us.step == "role" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
+				return nil
+			}
+			us.role = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
+			us.step = "fio"
+		} else if us.step == "fio" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
+				return nil
+			}
+			us.fio = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
+			us.step = "groupName"
+		} else if us.step == "groupName" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
+				return nil
+			}
+			us.groupName = update.Message.Text
+
+			if err := collectDataUsers(us.username, us.role, us.fio, us.groupName); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
@@ -138,20 +194,6 @@ func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
 	msg := tgbotapi.NewMessage(chatID, text)
 	bot.Send(msg)
-}
-
-func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	if os.Getenv("DB_SWITCH") == "on" {
-
-		//Отправляем username, chat_id, message, answer в БД
-		if err := collectDataUsers(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text); err != nil {
-
-			//Отправлем сообщение
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
-			bot.Send(msg)
-		}
-	}
-	return nil
 }
 
 func main() {

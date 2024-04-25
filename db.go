@@ -19,7 +19,7 @@ var sslmode = os.Getenv("SSLMODE")
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
 // Собираем данные полученные ботом
-func collectDataUsers(username string, chatid int64, answer string) error {
+func collectDataUsers(username string, role string, fio string, groupName string) error {
 
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
@@ -34,10 +34,10 @@ func collectDataUsers(username string, chatid int64, answer string) error {
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(username, chat_id, answer) VALUES($1, $2, $3);`
+	data := `INSERT INTO users(username, role, fio, groupName) VALUES($1, $2, $3);`
 
 	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, `@`+username, chatid, answer); err != nil {
+	if _, err = db.Exec(data, `@`+username, role, fio, groupName); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, ANSWER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, USERNAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
@@ -86,7 +86,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, NAME_GROUP TEXT, CLASS_LEADER TEXT); `); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT); `); err != nil {
 		return err
 	}
 
