@@ -10,6 +10,12 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+type BotState struct {
+	groupName   string
+	classLeader string
+	step        string
+}
+
 var adminPassword string = "1029384756"
 
 func telegramBot() {
@@ -50,7 +56,8 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				makeGroup(update, bot)
+				bs := &BotState{}
+				bs.makeGroup(update, bot)
 			default:
 				sendDB(update, bot)
 			}
@@ -96,29 +103,21 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	var groupName string
-	var classLeader string
-	var step string
+func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
-		if step == "" {
+		if bs.step == "" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
 			bot.Send(msg)
-			step = "groupName"
-		}
-
-		if step == "groupName" {
-			groupName = update.Message.Text
+			bs.step = "groupName"
+		} else if bs.step == "groupName" {
+			bs.groupName = update.Message.Text
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bot.Send(msg)
-			step = "classLeader"
-		}
+			bs.step = "classLeader"
+		} else if bs.step == "classLeader" {
+			bs.classLeader = update.Message.Text
 
-		if step == "classLeader" {
-			classLeader = update.Message.Text
-
-			if err := collectDataGroup(groupName, classLeader); err != nil {
-				//Отправлем сообщение
+			if err := collectDataGroup(bs.groupName, bs.classLeader); err != nil {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
 				bot.Send(msg)
 			} else {
@@ -126,9 +125,9 @@ func makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 				bot.Send(msg)
 			}
 
-			groupName = ""
-			classLeader = ""
-			step = ""
+			bs.groupName = ""
+			bs.classLeader = ""
+			bs.step = ""
 		}
 	}
 	return nil
