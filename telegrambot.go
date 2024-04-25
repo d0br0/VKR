@@ -106,23 +106,28 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
 		if bs.step == "" {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название группы:")
-			bot.Send(msg)
+			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
 			bs.step = "groupName"
 		} else if bs.step == "groupName" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
+				return nil
+			}
 			bs.groupName = update.Message.Text
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите имя классного руководителя:")
-			bot.Send(msg)
+			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			bs.step = "classLeader"
 		} else if bs.step == "classLeader" {
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
+				return nil
+			}
 			bs.classLeader = update.Message.Text
 
 			if err := collectDataGroup(bs.groupName, bs.classLeader); err != nil {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
-				bot.Send(msg)
+				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Группа успешно создана!")
-				bot.Send(msg)
+				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
 			}
 
 			bs.groupName = ""
@@ -131,6 +136,11 @@ func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 		}
 	}
 	return nil
+}
+
+func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
+	msg := tgbotapi.NewMessage(chatID, text)
+	bot.Send(msg)
 }
 
 func sendDB(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
