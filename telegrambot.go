@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -48,7 +47,7 @@ func telegramBot() {
 			continue
 		}
 
-		if reflect.TypeOf(update.Message.Text).Kind() == reflect.String && update.Message.Text != "" {
+		if update.Message.Text != "" {
 
 			switch update.Message.Text {
 			case "/start":
@@ -82,7 +81,10 @@ func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options []stri
 		keyboard = append(keyboard, row)
 	}
 	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(keyboard...)
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		log.Printf("Error sending message: %v\n", err)
+	}
 }
 
 func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
