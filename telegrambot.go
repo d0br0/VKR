@@ -10,13 +10,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var bs = &BotState{}
+var adminPassword string = "1029384756"
+
 type BotState struct {
 	groupName   string
 	classLeader string
 	step        string
 }
-
-var adminPassword string = "1029384756"
 
 func telegramBot() {
 
@@ -56,7 +57,6 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				bs := &BotState{}
 				bs.makeGroup(update, bot)
 			default:
 				sendDB(update, bot)
