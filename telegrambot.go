@@ -130,9 +130,6 @@ func (bs *BotState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
 			}
 
-			bs.groupName = ""
-			bs.classLeader = ""
-			bs.step = ""
 		}
 	}
 	return nil
