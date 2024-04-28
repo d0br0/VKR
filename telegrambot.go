@@ -116,10 +116,11 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	if os.Getenv("DB_SWITCH") == "on" {
-		if gs.step == "" {
+		switch gs.step {
+		case "":
 			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
 			gs.step = "groupName"
-		} else if gs.step == "groupName" {
+		case "groupName":
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
@@ -127,20 +128,26 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 			gs.groupName = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			gs.step = "classLeader"
-		} else if gs.step == "classLeader" {
+		case "classLeader":
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
 				return nil
 			}
 			gs.classLeader = update.Message.Text
 
+			// Здесь вы вызываете функцию collectDataGroup с параметрами groupName и classLeader.
+			// Если она завершится успешно, вы отправите сообщение о успешном создании группы.
+			// В противном случае вы сообщите об ошибке базы данных.
 			if err := collectDataGroup(gs.groupName, gs.classLeader); err != nil {
-				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
-				return fmt.Errorf("collectDataGroup failed: %w", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка базы данных, но бот продолжает работать.")
+				return fmt.Errorf("collectDataGroup не удалось: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
+				// Сбросим состояние, чтобы можно было создать новую группу.
+				gs.step = ""
+				gs.groupName = ""
+				gs.classLeader = ""
 			}
-
 		}
 	}
 	return nil
