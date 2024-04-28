@@ -34,7 +34,7 @@ func collectDataUsers(username string, role string, fio string, groupName string
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(username, role, fio, groupName) VALUES($1, $2, $3);`
+	data := `INSERT INTO users (username, role, fio, groupName) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
 	if _, err = db.Exec(data, `@`+username, role, fio, groupName); err != nil {
@@ -57,7 +57,7 @@ func collectDataGroup(groupName string, classLeader string) error {
 	}
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(group_name, class_leader) VALUES ($1, $2)`
+	query := `INSERT INTO structure (group_name, class_leader) VALUES ($1, $2)`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, groupName, classLeader); err != nil {
