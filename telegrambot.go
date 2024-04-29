@@ -73,7 +73,7 @@ func telegramBot() {
 				us.makeUser(update, bot)
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
-			case "Отметить присутсвующих":
+			case "Отметить присутствующих":
 				sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 				go func() {
 					ticker := time.NewTicker(2 * time.Minute)
