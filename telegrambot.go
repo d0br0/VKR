@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -29,7 +30,6 @@ type GroupState struct {
 }
 
 func telegramBot() {
-
 	//Создаем бота
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
@@ -43,13 +43,15 @@ func telegramBot() {
 	//Получаем обновления от бота
 	updates, err := bot.GetUpdatesChan(u)
 
+	// Создаем канал для управления таймером
+	timerControl := make(chan bool)
+
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
 
 		if update.Message.Text != "" {
-
 			switch update.Message.Text {
 			case "/start":
 				sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
@@ -69,6 +71,31 @@ func telegramBot() {
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
 				us.makeUser(update, bot)
+			case "Стоп":
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+			case "Отметить присутсвующих":
+				sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
+				go func() {
+					ticker := time.NewTicker(2 * time.Minute)
+					for {
+						select {
+						case <-ticker.C:
+							qrCodeData, err := generateQRCode("Присутствующий")
+							if err != nil {
+								log.Println("Ошибка при генерации QR-кода:", err)
+								return
+							}
+							err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+							if err != nil {
+								log.Println("Ошибка при отправке QR-кода в чат:", err)
+								return
+							}
+						case <-timerControl:
+							ticker.Stop()
+							return
+						}
+					}
+				}()
 			case "Сканирование Qr-code":
 				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code, и отрпавьте в чат")
 				qrText, err := scanQRCode(update.Message.Text)
@@ -218,27 +245,43 @@ func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
 	bot.Send(msg)
 }
 
-func generateQRCode(text string) string {
+func generateQRCode(text string) ([]byte, error) {
 	// Generate QR code
 	qr, err := qrcode.New(text, qrcode.Medium)
 	if err != nil {
 		log.Println("Error generating QR code:", err)
-		return ""
+		return nil, err
 	}
 
-	// Save QR code to a file (you can customize this part)
-	qrCodeFilePath := "/path/to/your/qr-code.png"
-	err = qr.Save(qrCodeFilePath)
+	// Create a buffer to hold the PNG data
+	buf := new(bytes.Buffer)
+
+	// Write QR code to buffer as PNG
+	err = qr.Write(256, buf)
 	if err != nil {
 		log.Println("Error saving QR code:", err)
-		return ""
+		return nil, err
 	}
 
-	return qrCodeFilePath
+	return buf.Bytes(), nil
+}
+
+func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte) error {
+	// Создание нового файла для отправки в чат
+	fileBytes := tgbotapi.FileBytes{Name: "qr-code.png", Bytes: qrCodeData}
+	photo := tgbotapi.NewPhotoUpload(chatID, fileBytes)
+
+	// Отправка QR-кода в чат
+	_, err := bot.Send(photo)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return nil
 }
 
 func scanQRCode(qrData string) (string, error) {
-	qr, err := qrcode.NewQRCode(qrData, qrcode.Highest)
+	qr, err := qrcode.New(qrData, qrcode.Highest)
 	if err != nil {
 		return "", err
 	}
