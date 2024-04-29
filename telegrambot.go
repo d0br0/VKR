@@ -69,6 +69,18 @@ func telegramBot() {
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
 				us.makeUser(update, bot)
+			case "Сканирование Qr-code":
+				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code, и отрпавьте в чат")
+				qrText, err := scanQRCode(update.Message.Text)
+				if err != nil {
+					log.Printf("Ошибка при сканировании QR-кода: %v", err)
+					continue
+				}
+				// Сохраняем информацию в базу данных
+				// Здесь вы можете добавить свою логику для сохранения данных
+				sendMessage(bot, update.Message.Chat.ID, "Информация из QR-кода: "+qrText)
+			default:
+				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
 		}
 	}
@@ -223,6 +235,14 @@ func generateQRCode(text string) string {
 	}
 
 	return qrCodeFilePath
+}
+
+func scanQRCode(qrData string) (string, error) {
+	qr, err := qrcode.NewQRCode(qrData, qrcode.Highest)
+	if err != nil {
+		return "", err
+	}
+	return qr.ToSmallString(false), nil
 }
 
 func main() {
