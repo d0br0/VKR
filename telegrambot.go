@@ -75,8 +75,18 @@ func telegramBot() {
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 			case "Отметить присутствующих":
 				sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
+				qrCodeData, err := generateQRCode("Присутствующий")
+				if err != nil {
+					log.Println("Ошибка при генерации QR-кода:", err)
+					return
+				}
+				err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+				if err != nil {
+					log.Println("Ошибка при отправке QR-кода в чат:", err)
+					return
+				}
 				go func() {
-					ticker := time.NewTicker(2 * time.Minute)
+					ticker := time.NewTicker(1 * time.Minute)
 					for {
 						select {
 						case <-ticker.C:
