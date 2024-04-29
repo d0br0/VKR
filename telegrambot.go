@@ -206,6 +206,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 }
 
 func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == "" {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
@@ -248,6 +249,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			}
 
 		}
+		isProcessing = false
 	}
 	return nil
 }
