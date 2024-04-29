@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 var us = &UserState{}
@@ -203,6 +204,25 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
 	msg := tgbotapi.NewMessage(chatID, text)
 	bot.Send(msg)
+}
+
+func generateQRCode(text string) string {
+	// Generate QR code
+	qr, err := qrcode.New(text, qrcode.Medium)
+	if err != nil {
+		log.Println("Error generating QR code:", err)
+		return ""
+	}
+
+	// Save QR code to a file (you can customize this part)
+	qrCodeFilePath := "/path/to/your/qr-code.png"
+	err = qr.Save(qrCodeFilePath)
+	if err != nil {
+		log.Println("Error saving QR code:", err)
+		return ""
+	}
+
+	return qrCodeFilePath
 }
 
 func main() {
