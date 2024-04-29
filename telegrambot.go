@@ -14,6 +14,7 @@ import (
 var us = &UserState{}
 var gs = &GroupState{}
 var adminPassword string = "1029384756"
+var isProcessing bool
 
 type UserState struct {
 	username  string
@@ -51,7 +52,7 @@ func telegramBot() {
 			continue
 		}
 
-		if update.Message.Text != "" {
+		if update.Message.Text != "" && !isProcessing {
 			switch update.Message.Text {
 			case "/start":
 				sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
@@ -165,6 +166,7 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch gs.step {
 		case "":
@@ -176,7 +178,6 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				return nil
 			}
 			gs.groupName = update.Message.Text
-			log.Printf("Название группы: %s", gs.groupName) // Логирование названия группы
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			gs.step = "classLeader"
 		case "classLeader":
@@ -185,7 +186,6 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				return nil
 			}
 			gs.classLeader = update.Message.Text
-			log.Printf("Имя классного руководителя: %s", gs.classLeader) // Логирование имени классного руководителя
 			// Здесь вы вызываете функцию collectDataGroup с параметрами groupName и classLeader.
 			// Если она завершится успешно, вы отправите сообщение о успешном создании группы.
 			// В противном случае вы сообщите об ошибке базы данных.
@@ -199,6 +199,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				gs.groupName = ""
 				gs.classLeader = ""
 			}
+			isProcessing = false
 		}
 	}
 	return nil
