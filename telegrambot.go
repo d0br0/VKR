@@ -176,6 +176,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				return nil
 			}
 			gs.groupName = update.Message.Text
+			log.Printf("Название группы: %s", gs.groupName) // Логирование названия группы
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			gs.step = "classLeader"
 		case "classLeader":
@@ -184,7 +185,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				return nil
 			}
 			gs.classLeader = update.Message.Text
-
+			log.Printf("Имя классного руководителя: %s", gs.classLeader) // Логирование имени классного руководителя
 			// Здесь вы вызываете функцию collectDataGroup с параметрами groupName и classLeader.
 			// Если она завершится успешно, вы отправите сообщение о успешном создании группы.
 			// В противном случае вы сообщите об ошибке базы данных.
