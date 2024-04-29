@@ -74,6 +74,7 @@ func telegramBot() {
 				us.makeUser(update, bot)
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+				timerControl <- true
 			case "Отметить присутствующих":
 				sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 				qrCodeData, err := generateQRCode("Присутствующий")
