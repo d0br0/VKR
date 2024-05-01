@@ -217,6 +217,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
+			us.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
 			us.step = "role"
 		} else if us.step == "role" {
