@@ -17,6 +17,8 @@ var gs = &GroupState{}
 var adminPassword string = "1029384756"
 var isProcessing bool
 var wg sync.WaitGroup
+var userStates = make(map[int64]*UserState)
+var groupStates = make(map[int64]*GroupState)
 
 type UserState struct {
 	username  string
@@ -24,7 +26,6 @@ type UserState struct {
 	fio       string
 	groupName string
 	step      int
-	ChatID    int64
 }
 
 type GroupState struct {
@@ -174,7 +175,19 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 }
 
 func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	defer wg.Done()
 	isProcessing = true
+	defer func() {
+		isProcessing = false
+	}()
+	// Получаем состояние группы из карты по ID чата
+	groupState, ok := groupStates[update.Message.Chat.ID]
+	if !ok {
+		// Если состояние группы не найдено, создаем новое состояние
+		groupState = &GroupState{}
+		groupStates[update.Message.Chat.ID] = groupState
+	}
+
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch gs.step {
 		case 0:
@@ -216,11 +229,20 @@ func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot 
 func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	defer wg.Done()
 	isProcessing = true
+	defer func() {
+		isProcessing = false
+	}()
+	userState, ok := userStates[update.Message.Chat.ID]
+	if !ok {
+		// Если состояние пользователя не найдено, создаем новое состояние
+		userState = &UserState{}
+		userStates[update.Message.Chat.ID] = userState
+	}
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == 0 {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
 			//us.step++
-		} else if us.step == 0 {
+		} else if us.step == 1 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
@@ -228,7 +250,7 @@ func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *t
 			us.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
 			//us.step++
-		} else if us.step == 0 {
+		} else if us.step == 2 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
 				return nil
@@ -236,7 +258,7 @@ func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *t
 			us.role = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
 			//us.step++
-		} else if us.step == 0 {
+		} else if us.step == 3 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
 				return nil
@@ -244,7 +266,7 @@ func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *t
 			us.fio = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
 			//us.step++
-		} else if us.step == 0 {
+		} else if us.step == 4 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
 				return nil
