@@ -177,9 +177,7 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	defer wg.Done()
 	isProcessing = true
-	defer func() {
-		isProcessing = false
-	}()
+
 	// Получаем состояние группы из карты по ID чата
 	groupState, ok := groupStates[update.Message.Chat.ID]
 	if !ok {
@@ -189,39 +187,36 @@ func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot 
 	}
 
 	if os.Getenv("DB_SWITCH") == "on" {
-		switch gs.step {
+		switch groupState.step {
 		case 0:
 			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
-			gs.step++
+			groupState.step++
 		case 1:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
 			}
-			gs.groupName = update.Message.Text
+			groupState.groupName = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
-			gs.step++
+			groupState.step++
 		case 2:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
 				return nil
 			}
-			gs.classLeader = update.Message.Text
-			// Здесь вы вызываете функцию collectDataGroup с параметрами groupName и classLeader.
-			// Если она завершится успешно, вы отправите сообщение о успешном создании группы.
-			// В противном случае вы сообщите об ошибке базы данных.
-			if err := collectDataGroup(gs.groupName, gs.classLeader); err != nil {
-				sendMessage(bot, update.Message.Chat.ID, "Ошибка базы данных, но бот продолжает работать.")
-				return fmt.Errorf("collectDataGroup не удалось: %w", err)
+			groupState.classLeader = update.Message.Text
+
+			if err := collectDataGroup(groupState.groupName, groupState.classLeader); err != nil {
+				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
-				// Сбросим состояние, чтобы можно было создать новую группу.
-				gs.step = 0
-				gs.groupName = ""
-				gs.classLeader = ""
+				groupState.step = 0
+				groupState.groupName = ""
+				groupState.classLeader = ""
 			}
-			isProcessing = false
 		}
+		isProcessing = false
 	}
 	return nil
 }
@@ -229,60 +224,61 @@ func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot 
 func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	defer wg.Done()
 	isProcessing = true
-	defer func() {
-		isProcessing = false
-	}()
+
+	// Получаем состояние пользователя из карты по ID чата
 	userState, ok := userStates[update.Message.Chat.ID]
 	if !ok {
 		// Если состояние пользователя не найдено, создаем новое состояние
 		userState = &UserState{}
 		userStates[update.Message.Chat.ID] = userState
 	}
+
 	if os.Getenv("DB_SWITCH") == "on" {
-		if us.step == 0 {
+		switch userState.step {
+		case 0:
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
-			//us.step++
-		} else if us.step == 1 {
+			userState.step++
+		case 1:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
-			us.username = update.Message.Text
+			userState.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
-			//us.step++
-		} else if us.step == 2 {
+			userState.step++
+		case 2:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
 				return nil
 			}
-			us.role = update.Message.Text
+			userState.role = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
-			//us.step++
-		} else if us.step == 3 {
+			userState.step++
+		case 3:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
 				return nil
 			}
-			us.fio = update.Message.Text
+			userState.fio = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
-			//us.step++
-		} else if us.step == 4 {
+			userState.step++
+		case 4:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
 				return nil
 			}
-			us.groupName = update.Message.Text
+			userState.groupName = update.Message.Text
 
-			if err := collectDataUsers(us.username, us.role, us.fio, us.groupName); err != nil {
+			if err := collectDataUsers(userState.username, userState.role, userState.fio, userState.groupName); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
-				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
-				us.step = 0
-				us.groupName = ""
-				us.username = ""
-				us.role = ""
-				us.fio = ""
+				sendMessage(bot, update.Message.Chat.ID, "Пользователь успешно создан!")
+				userState.step = 0
+				userState.groupName = ""
+				userState.username = ""
+				userState.role = ""
+				userState.fio = ""
 			}
 		}
 		isProcessing = false
