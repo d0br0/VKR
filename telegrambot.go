@@ -15,7 +15,6 @@ var us = &UserState{}
 var gs = &GroupState{}
 var adminPassword string = "1029384756"
 var isProcessing bool
-var users = make(map[int64]*UserState)
 
 type UserState struct {
 	username  string
@@ -210,11 +209,6 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 
 func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	isProcessing = true
-	us, exists := users[update.Message.Chat.ID]
-	if !exists {
-		us = &UserState{ChatID: update.Message.Chat.ID}
-		users[update.Message.Chat.ID] = us
-	}
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == 0 {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
