@@ -21,7 +21,7 @@ type UserState struct {
 	role      string
 	fio       string
 	groupName string
-	step      string
+	step      int
 }
 
 type GroupState struct {
@@ -213,34 +213,34 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
-		if us.step == "" {
+		if us.step == 0 {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
-			us.step = "username"
-		} else if us.step == "username" {
+			us.step = 1
+		} else if us.step == 1 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
 			us.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
-			us.step = "role"
-		} else if us.step == "role" {
+			us.step = 2
+		} else if us.step == 2 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
 				return nil
 			}
 			us.role = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
-			us.step = "fio"
-		} else if us.step == "fio" {
+			us.step = 3
+		} else if us.step == 3 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
 				return nil
 			}
 			us.fio = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
-			us.step = "groupName"
-		} else if us.step == "groupName" {
+			us.step = 4
+		} else if us.step == 4 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
 				return nil
