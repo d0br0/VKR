@@ -173,12 +173,15 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 		case "":
 			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
 			gs.step = "groupName"
+			sendMessage(bot, update.Message.Chat.ID, gs.step)
 		case "groupName":
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
 			}
+			sendMessage(bot, update.Message.Chat.ID, gs.step)
 			gs.groupName = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, gs.step)
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			gs.step = "classLeader"
 		case "classLeader":
