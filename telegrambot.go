@@ -209,10 +209,10 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 }
 
 func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	user, exists := users[update.Message.Chat.ID]
+	us, exists := users[update.Message.Chat.ID]
 	if !exists {
-		user = &UserState{ChatID: update.Message.Chat.ID}
-		users[update.Message.Chat.ID] = user
+		us = &UserState{ChatID: update.Message.Chat.ID}
+		users[update.Message.Chat.ID] = us
 	}
 	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
