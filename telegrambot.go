@@ -27,7 +27,7 @@ type UserState struct {
 type GroupState struct {
 	groupName   string
 	classLeader string
-	step        string
+	step        int
 }
 
 func telegramBot() {
@@ -170,22 +170,18 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch gs.step {
-		case "":
+		case 0:
 			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
-			gs.step = "groupName"
-			sendMessage(bot, update.Message.Chat.ID, gs.step)
-		case "groupName":
-			sendMessage(bot, update.Message.Chat.ID, gs.step)
+			gs.step++
+		case 1:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
 			}
-			sendMessage(bot, update.Message.Chat.ID, gs.step)
 			gs.groupName = update.Message.Text
-			sendMessage(bot, update.Message.Chat.ID, gs.step)
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
-			gs.step = "classLeader"
-		case "classLeader":
+			gs.step++
+		case 2:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
 				return nil
@@ -200,7 +196,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
 				// Сбросим состояние, чтобы можно было создать новую группу.
-				gs.step = ""
+				gs.step = 0
 				gs.groupName = ""
 				gs.classLeader = ""
 			}
@@ -215,7 +211,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == 0 {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
-			us.step = 1
+			us.step++
 		} else if us.step == 1 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
@@ -223,7 +219,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			}
 			us.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
-			us.step = 2
+			us.step++
 		} else if us.step == 2 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
@@ -231,7 +227,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			}
 			us.role = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
-			us.step = 3
+			us.step++
 		} else if us.step == 3 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
@@ -239,7 +235,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			}
 			us.fio = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
-			us.step = 4
+			us.step++
 		} else if us.step == 4 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
@@ -252,6 +248,11 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
+				us.step = 0
+				us.groupName = ""
+				us.username = ""
+				us.role = ""
+				us.fio = ""
 			}
 		}
 		isProcessing = false
