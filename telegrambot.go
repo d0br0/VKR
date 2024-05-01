@@ -71,7 +71,49 @@ func telegramBot() {
 			case "Создание группы":
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
-				us.makeUser(update, bot)
+				if os.Getenv("DB_SWITCH") == "on" {
+					if us.step == "" {
+						sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+						us.step = "username"
+					} else if us.step == "username" {
+						if update.Message.Text == "" {
+							sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
+
+						}
+						sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
+						us.step = "role"
+					} else if us.step == "role" {
+						if update.Message.Text == "" {
+							sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
+
+						}
+						us.role = update.Message.Text
+						sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
+						us.step = "fio"
+					} else if us.step == "fio" {
+						if update.Message.Text == "" {
+							sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
+
+						}
+						us.fio = update.Message.Text
+						sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
+						us.step = "groupName"
+					} else if us.step == "groupName" {
+						if update.Message.Text == "" {
+							sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
+
+						}
+						us.groupName = update.Message.Text
+
+						if err := collectDataUsers(us.username, us.role, us.fio, us.groupName); err != nil {
+							sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+
+						} else {
+							sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
+						}
+
+					}
+				}
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 				timerControl <- true
