@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -15,6 +16,7 @@ var us = &UserState{}
 var gs = &GroupState{}
 var adminPassword string = "1029384756"
 var isProcessing bool
+var wg sync.WaitGroup
 
 type UserState struct {
 	username  string
@@ -72,7 +74,9 @@ func telegramBot() {
 			case "Создание группы":
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
-				us.makeUser(update, bot)
+				wg.Add(1)
+				us.makeUser(&wg, update, bot)
+				wg.Wait()
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 				timerControl <- true
@@ -207,7 +211,8 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 	return nil
 }
 
-func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	defer wg.Done()
 	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == 0 {
