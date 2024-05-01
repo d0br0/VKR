@@ -72,7 +72,9 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				gs.makeGroup(update, bot)
+				wg.Add(1)
+				gs.makeGroup(&wg, update, bot)
+				wg.Wait()
 			case "Создание пользователя":
 				wg.Add(1)
 				us.makeUser(&wg, update, bot)
@@ -171,7 +173,7 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	isProcessing = true
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch gs.step {
@@ -217,32 +219,32 @@ func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *t
 	if os.Getenv("DB_SWITCH") == "on" {
 		if us.step == 0 {
 			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
-			us.step++
-		} else if us.step == 1 {
+			//us.step++
+		} else if us.step == 0 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
 			us.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
-			us.step++
-		} else if us.step == 2 {
+			//us.step++
+		} else if us.step == 0 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название роли не может быть пустым. Пожалуйста, введите название роли:")
 				return nil
 			}
 			us.role = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
-			us.step++
-		} else if us.step == 3 {
+			//us.step++
+		} else if us.step == 0 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
 				return nil
 			}
 			us.fio = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
-			us.step++
-		} else if us.step == 4 {
+			//us.step++
+		} else if us.step == 0 {
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
 				return nil
