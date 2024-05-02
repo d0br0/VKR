@@ -118,14 +118,23 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code, и отрпавьте в чат")
-				qrText, err := scanQRCode(update.Message.Text)
-				if err != nil {
-					log.Printf("Ошибка при сканировании QR-кода: %v", err)
-					continue
+				if update.Message.Photo != nil {
+					fileID := (*update.Message.Photo)[0].FileID
+					fileURL, err := bot.GetFileDirectURL(fileID)
+					if err != nil {
+						log.Println("Error getting file URL:", err)
+						continue
+					}
+
+					qrCodeData, err := qrcode.Decode(fileURL)
+					if err != nil {
+						log.Println("Error decoding QR code:", err)
+						continue
+					}
+
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "QR code data: "+qrCodeData)
+					bot.Send(msg)
 				}
-				// Сохраняем информацию в базу данных
-				// Здесь вы можете добавить свою логику для сохранения данных
-				sendMessage(bot, update.Message.Chat.ID, "Информация из QR-кода: "+qrText)
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
