@@ -121,6 +121,7 @@ func telegramBot() {
 					}
 				}()
 			case "Сканирование Qr-code":
+				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
 				if update.Message.Photo != nil {
 					fileID := (*update.Message.Photo)[0].FileID
 					fileURL, err := bot.GetFileDirectURL(fileID)
