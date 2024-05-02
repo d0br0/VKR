@@ -3,16 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"image/jpeg"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/makiuchi-d/gozxing"
-	gozxingqrcode "github.com/makiuchi-d/gozxing/qrcode"
 	qrcode "github.com/skip2/go-qrcode"
 )
 
@@ -122,34 +118,14 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-				if update.Message.Photo != nil {
-					fileID := (*update.Message.Photo)[0].FileID
-					fileURL, err := bot.GetFileDirectURL(fileID)
-					if err != nil {
-						log.Println("Error getting file URL:", err)
-						continue
-					}
-
-					resp, err := http.Get(fileURL)
-					if err != nil {
-						log.Println("Error downloading the photo:", err)
-						continue
-					}
-					defer resp.Body.Close()
-
-					img, err := jpeg.Decode(resp.Body)
-					if err != nil {
-						log.Println("Error decoding the photo:", err)
-						continue
-					}
-
-					bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
-					qrReader := gozxingqrcode.NewQRCodeReader()
-					result, _ := qrReader.Decode(bmp, nil)
-
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "QR code data: "+result.GetText())
-					bot.Send(msg)
+				qrText, err := scanQRCode(update.Message.Text)
+				if err != nil {
+					log.Printf("Ошибка при сканировании QR-кода: %v", err)
+					continue
 				}
+				// Сохраняем информацию в базу данных
+				// Здесь вы можете добавить свою логику для сохранения данных
+				sendMessage(bot, update.Message.Chat.ID, "Информация из QR-кода: "+qrText)
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
