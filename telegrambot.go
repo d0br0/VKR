@@ -11,6 +11,8 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/makiuchi-d/gozxing"
+	gozxingqrcode "github.com/makiuchi-d/gozxing/qrcode"
 	qrcode "github.com/skip2/go-qrcode"
 )
 
@@ -141,7 +143,7 @@ func telegramBot() {
 					}
 
 					bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
-					qrReader := qrcode.NewQRCodeReader()
+					qrReader := gozxingqrcode.NewQRCodeReader()
 					result, _ := qrReader.Decode(bmp, nil)
 
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "QR code data: "+result.GetText())
