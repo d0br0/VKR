@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image/jpeg"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -117,7 +119,6 @@ func telegramBot() {
 					}
 				}()
 			case "Сканирование Qr-code":
-				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code, и отрпавьте в чат")
 				if update.Message.Photo != nil {
 					fileID := (*update.Message.Photo)[0].FileID
 					fileURL, err := bot.GetFileDirectURL(fileID)
@@ -126,13 +127,24 @@ func telegramBot() {
 						continue
 					}
 
-					qrCodeData, err := qrcode.Decode(fileURL)
+					resp, err := http.Get(fileURL)
 					if err != nil {
-						log.Println("Error decoding QR code:", err)
+						log.Println("Error downloading the photo:", err)
+						continue
+					}
+					defer resp.Body.Close()
+
+					img, err := jpeg.Decode(resp.Body)
+					if err != nil {
+						log.Println("Error decoding the photo:", err)
 						continue
 					}
 
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "QR code data: "+qrCodeData)
+					bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
+					qrReader := qrcode.NewQRCodeReader()
+					result, _ := qrReader.Decode(bmp, nil)
+
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "QR code data: "+result.GetText())
 					bot.Send(msg)
 				}
 			default:
