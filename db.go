@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -30,7 +29,7 @@ func collectDataUsers(username string, role string, fio string, groupName string
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	//Создаем SQL запрос
@@ -53,7 +52,7 @@ func collectDataGroup(groupName string, classLeader string) error {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// SQL запрос для добавления новой группы в таблицу "group"
