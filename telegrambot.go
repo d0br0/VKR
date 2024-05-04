@@ -124,21 +124,21 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-				if update.Message.Photo != nil {
-					photo := (*update.Message.Photo)[len(*update.Message.Photo)-1]
-					fileURL, err := bot.GetFileDirectURL(photo.FileID)
-					if err != nil {
-						log.Panic(err)
-					}
 
-					qrCodeData, err := decodeQRCode(fileURL)
-					if err != nil {
-						log.Panic(err)
-					}
-
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, qrCodeData)
-					bot.Send(msg)
+				photo := (*update.Message.Photo)[len(*update.Message.Photo)-1]
+				fileURL, err := bot.GetFileDirectURL(photo.FileID)
+				if err != nil {
+					log.Panic(err)
 				}
+
+				qrCodeData, err := decodeQRCode(fileURL)
+				if err != nil {
+					log.Panic(err)
+				}
+
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, qrCodeData)
+				bot.Send(msg)
+
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
