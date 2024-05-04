@@ -3,10 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	tuotooQR "github.com/tuotoo/qrcode"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	qrcode "github.com/skip2/go-qrcode"
@@ -118,14 +123,21 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-				qrText, err := scanQRCode(update.Message.Text)
-				if err != nil {
-					log.Printf("Ошибка при сканировании QR-кода: %v", err)
-					continue
+				if update.Message.Photo != nil {
+					photo := (*update.Message.Photo)[len(*update.Message.Photo)-1]
+					fileURL, err := bot.GetFileDirectURL(photo.FileID)
+					if err != nil {
+						log.Panic(err)
+					}
+
+					qrCodeData, err := decodeQRCode(fileURL)
+					if err != nil {
+						log.Panic(err)
+					}
+
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, qrCodeData)
+					bot.Send(msg)
 				}
-				// Сохраняем информацию в базу данных
-				// Здесь вы можете добавить свою логику для сохранения данных
-				sendMessage(bot, update.Message.Chat.ID, "Информация из QR-кода: "+qrText)
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
@@ -326,12 +338,29 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func scanQRCode(qrData string) (string, error) {
-	qr, err := qrcode.New(qrData, qrcode.Highest)
+func decodeQRCode(fileURL string) (string, error) {
+	resp, err := http.Get(fileURL)
 	if err != nil {
 		return "", err
 	}
-	return qr.ToSmallString(false), nil
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+
+	qrCode, err := tuotooQR.Decode(img)
+	if err != nil {
+		return "", err
+	}
+
+	return qrCode.Content, nil
 }
 
 func main() {
