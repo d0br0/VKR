@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
@@ -355,7 +356,13 @@ func decodeQRCode(fileURL string) (string, error) {
 		return "", err
 	}
 
-	qrCode, err := tuotooQR.Decode(img)
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, img, nil)
+	if err != nil {
+		return "", err
+	}
+
+	qrCode, err := tuotooQR.Decode(buf)
 	if err != nil {
 		return "", err
 	}
