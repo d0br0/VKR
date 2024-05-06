@@ -327,44 +327,43 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 
 func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-	isProcessing = true
 	if update.Message.Photo != nil {
 		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
 		fileURL, err := bot.GetFileDirectURL(fileID)
 		if err != nil {
-			log.Println("Error getting file URL:", err)
-			return
-		}
-		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-		resp, err := http.Get(fileURL)
-		if err != nil {
-			log.Println("Error getting image:", err)
-			return
-		}
-		defer resp.Body.Close()
-		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-		img, _, err := image.Decode(resp.Body)
-		if err != nil {
-			log.Println("Error decoding image:", err)
-			return
-		}
-		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-		if err != nil {
-			log.Println("Error converting image to binary bitmap:", err)
-			return
-		}
-		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-		qrReader := gozxingqr.NewQRCodeReader()
-		result, err := qrReader.Decode(bmp, nil)
-		if err != nil {
-			log.Println("Error reading QR code:", err)
+			log.Println("Ошибка при получении URL файла:", err)
 			return
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, result.GetText())
-		bot.Send(msg)
-		isProcessing = false
+		resp, err := http.Get(fileURL)
+		if err != nil {
+			log.Println("Ошибка при получении изображения:", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		img, _, err := image.Decode(resp.Body)
+		if err != nil {
+			log.Println("Ошибка при декодировании изображения:", err)
+			return
+		}
+
+		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+		if err != nil {
+			log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
+			return
+		}
+
+		qrReader := gozxingqr.NewQRCodeReader()
+		result, err := qrReader.Decode(bmp, nil)
+		if err != nil {
+			log.Println("Ошибка при чтении QR-кода:", err)
+			return
+		}
+
+		sendMessage(bot, update.Message.Chat.ID, result.GetText())
+	} else {
+		sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 	}
 }
 
