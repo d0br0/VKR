@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/makiuchi-d/gozxing"
@@ -81,9 +80,7 @@ func telegramBot() {
 			case "Создание группы":
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
-				wg.Add(1)
-				us.makeUser(&wg, update, bot)
-				wg.Wait()
+				us.makeUser(update, bot)
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 				timerControl <- true
@@ -218,9 +215,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 	return nil
 }
 
-func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	defer wg.Done()
-	isProcessing = true
+func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние пользователя из карты по ID чата
 	userState, ok := userStates[update.Message.Chat.ID]
@@ -278,7 +273,6 @@ func (us *UserState) makeUser(wg *sync.WaitGroup, update tgbotapi.Update, bot *t
 				userState.fio = ""
 			}
 		}
-		isProcessing = false
 	}
 	return nil
 }
