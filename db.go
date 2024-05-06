@@ -89,6 +89,10 @@ func createTable() error {
 		return err
 	}
 
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT); `); err != nil {
+		return err
+	}
+
 	return nil
 }
 
