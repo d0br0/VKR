@@ -28,7 +28,7 @@ func collectDataUsers(username string, role string, fio string, groupName string
 	defer db.Close()
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users (username, role, fio, groupName) VALUES($1, $2, $3, $4);`
+	data := `INSERT INTO users(username, role, fio, groupName) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
 	if _, err = db.Exec(data, `@`+username, role, fio, groupName); err != nil {
@@ -46,7 +46,7 @@ func collectDataGroup(groupName string, classLeader string) error {
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure (group_name, class_leader) VALUES ($1, $2)`
+	query := `INSERT INTO structure(group_name, class_leader) VALUES($1, $2)`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, groupName, classLeader); err != nil {
@@ -64,7 +64,7 @@ func collectTesting(apples string, chear string) error {
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure (apples, chear) VALUES ($1, $2)`
+	query := `INSERT INTO structure(apples, chear) VALUES($1, $2)`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, apples, chear); err != nil {
@@ -111,7 +111,7 @@ func getNumberOfUsers() (int64, error) {
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
-		return 0, err
+		return 1, err
 	}
 	defer db.Close()
 
@@ -119,7 +119,7 @@ func getNumberOfUsers() (int64, error) {
 	row := db.QueryRow("SELECT COUNT(DISTINCT username) FROM users;")
 	err = row.Scan(&count)
 	if err != nil {
-		return 0, err
+		return 2, err
 	}
 
 	return count, nil
