@@ -23,7 +23,6 @@ var us = &UserState{}
 var gs = &GroupState{}
 var adminPassword string = "1029384756"
 var isProcessing bool
-var wg sync.WaitGroup
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 
@@ -80,9 +79,7 @@ func telegramBot() {
 			case "Число пользователей":
 				handleNumberOfUsers(update, bot)
 			case "Создание группы":
-				wg.Add(1)
-				gs.makeGroup(&wg, update, bot)
-				wg.Wait()
+				gs.makeGroup(update, bot)
 			case "Создание пользователя":
 				wg.Add(1)
 				us.makeUser(&wg, update, bot)
@@ -177,9 +174,7 @@ func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	defer wg.Done()
-	isProcessing = true
+func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние группы из карты по ID чата
 	groupState, ok := groupStates[update.Message.Chat.ID]
@@ -219,7 +214,6 @@ func (gs *GroupState) makeGroup(wg *sync.WaitGroup, update tgbotapi.Update, bot 
 				groupState.classLeader = ""
 			}
 		}
-		isProcessing = false
 	}
 	return nil
 }
