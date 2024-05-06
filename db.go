@@ -27,11 +27,6 @@ func collectDataUsers(username string, role string, fio string, groupName string
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		return err
-	}
-
 	//Создаем SQL запрос
 	data := `INSERT INTO users (username, role, fio, groupName) VALUES($1, $2, $3, $4);`
 
@@ -50,11 +45,6 @@ func collectDataGroup(groupName string, classLeader string) error {
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		return err
-	}
-
 	// SQL запрос для добавления новой группы в таблицу "group"
 	query := `INSERT INTO structure (group_name, class_leader) VALUES ($1, $2)`
 
@@ -72,11 +62,6 @@ func collectTesting(apples string, chear string) error {
 		return err
 	}
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		return err
-	}
 
 	// SQL запрос для добавления новой группы в таблицу "group"
 	query := `INSERT INTO structure (apples, chear) VALUES ($1, $2)`
