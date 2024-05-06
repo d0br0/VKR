@@ -327,6 +327,7 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 
 func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
+	isProcessing = true
 	if update.Message.Photo != nil {
 		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
 		fileURL, err := bot.GetFileDirectURL(fileID)
@@ -363,6 +364,7 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, result.GetText())
 		bot.Send(msg)
+		isProcessing = false
 	}
 }
 
