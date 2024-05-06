@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"image/jpeg"
-	"io"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
-	tuotooQR "github.com/tuotoo/qrcode"
+	"github.com/makiuchi-d/gozxing"
+	gozxingqr "github.com/makiuchi-d/gozxing/qrcode"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	qrcode "github.com/skip2/go-qrcode"
@@ -123,22 +124,7 @@ func telegramBot() {
 					}
 				}()
 			case "Сканирование Qr-code":
-				sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-
-				photo := (*update.Message.Photo)[len(*update.Message.Photo)-1]
-				fileURL, err := bot.GetFileDirectURL(photo.FileID)
-				if err != nil {
-					log.Panic(err)
-				}
-
-				qrCodeData, err := decodeQRCode(fileURL)
-				if err != nil {
-					log.Panic(err)
-				}
-
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, qrCodeData)
-				bot.Send(msg)
-
+				handleQRCodeMessage(bot, update)
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
@@ -339,35 +325,45 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func decodeQRCode(fileURL string) (string, error) {
-	resp, err := http.Get(fileURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
+	if update.Message.Photo != nil {
+		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
+		fileURL, err := bot.GetFileDirectURL(fileID)
+		if err != nil {
+			log.Println("Error getting file URL:", err)
+			return
+		}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+		resp, err := http.Get(fileURL)
+		if err != nil {
+			log.Println("Error getting image:", err)
+			return
+		}
+		defer resp.Body.Close()
 
-	img, _, err := image.Decode(bytes.NewReader(body))
-	if err != nil {
-		return "", err
-	}
+		img, _, err := image.Decode(resp.Body)
+		if err != nil {
+			log.Println("Error decoding image:", err)
+			return
+		}
 
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, img, nil)
-	if err != nil {
-		return "", err
-	}
+		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+		if err != nil {
+			log.Println("Error converting image to binary bitmap:", err)
+			return
+		}
 
-	qrCode, err := tuotooQR.Decode(buf)
-	if err != nil {
-		return "", err
-	}
+		qrReader := gozxingqr.NewQRCodeReader()
+		result, err := qrReader.Decode(bmp, nil)
+		if err != nil {
+			log.Println("Error reading QR code:", err)
+			return
+		}
 
-	return qrCode.Content, nil
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, result.GetText())
+		bot.Send(msg)
+	}
 }
 
 func main() {
