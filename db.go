@@ -66,6 +66,29 @@ func collectDataGroup(groupName string, classLeader string) error {
 	return nil
 }
 
+func collectTesting(apples string, chear string) error {
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		return err
+	}
+
+	// SQL запрос для добавления новой группы в таблицу "group"
+	query := `INSERT INTO structure (apples, chear) VALUES ($1, $2)`
+
+	// Выполнение SQL запроса
+	if _, err := db.Exec(query, apples, chear); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Создаем таблицы: users, magazine, group в БД при подключении к ней
 func createTable() error {
 
@@ -85,11 +108,11 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT); `); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
 		return err
 	}
-
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT); `); err != nil {
+	//Создаём таблицу testing
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS testing(ID SERIAL PRIMARY KEY, APPLES TEXT, CHEAR TEXT);`); err != nil {
 		return err
 	}
 

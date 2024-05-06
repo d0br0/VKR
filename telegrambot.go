@@ -125,6 +125,10 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				handleQRCodeMessage(bot, update)
+			case "testing":
+				apples := "Зелёные"
+				chear := "Табуретка"
+				collectTesting(apples, chear)
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
