@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -88,6 +89,7 @@ func collectTesting(apples string, chear string) error {
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, apples, chear); err != nil {
+		log.Printf("Error executing query: %v\n", err)
 		return err
 	}
 
@@ -124,11 +126,6 @@ func createTable() error {
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS problem (ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
 		return err
 	}
-
-	//_, err = db.Exec("ALTER TABLE structure ADD COLUMN CHAT_ID INT")
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
