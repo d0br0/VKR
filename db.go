@@ -46,10 +46,10 @@ func collectDataGroup(chatID int64, groupName string, classLeader string) error 
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(chat_id, group_name, class_leader) VALUES($1, $2)`
+	query := `INSERT INTO structure(group_name, class_leader, chat_id) VALUES($1, $2, $3)`
 
 	// Выполнение SQL запроса
-	if _, err := db.Exec(query, chatID, groupName, classLeader); err != nil {
+	if _, err := db.Exec(query, groupName, classLeader, chatID); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure(ID SERIAL PRIMARY KEY, CHAT_ID INT, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT, CHAT_ID INT,);`); err != nil {
 		return err
 	}
 	//Создаём таблицу testing
