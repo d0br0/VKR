@@ -93,7 +93,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, CHAT_ID, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS structure(ID SERIAL PRIMARY KEY, CHAT_ID INT, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу testing
