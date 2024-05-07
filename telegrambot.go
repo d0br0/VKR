@@ -123,6 +123,16 @@ func telegramBot() {
 				apples := "Зелёные"
 				chear := "Табуретка"
 				collectTesting(apples, chear)
+				if os.Getenv("DB_SWITCH") == "on" {
+
+					//Отправляем username, chat_id, message, answer в БД
+					if err := collectData(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text); err != nil {
+
+						//Отправлем сообщение
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
+						bot.Send(msg)
+					}
+				}
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}

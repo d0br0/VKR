@@ -38,6 +38,26 @@ func collectDataUsers(username string, role string, fio string, groupName string
 	return nil
 }
 
+func collectData(username string, chatid int64, message string) error {
+
+	//Подключаемся к БД
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	//Создаем SQL запрос
+	data := `INSERT INTO problem(username, chat_id, message) VALUES($1, $2, $3);`
+
+	//Выполняем наш SQL запрос
+	if _, err = db.Exec(data, `@`+username, chatid, message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func collectDataGroup(chatID int64, groupName string, classLeader string) error {
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
@@ -64,7 +84,7 @@ func collectTesting(apples string, chear string) error {
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(apples, chear) VALUES($1, $2);`
+	query := `INSERT INTO testing(apples, chear) VALUES($1, $2);`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, apples, chear); err != nil {
@@ -85,19 +105,23 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users(ID SERIAL PRIMARY KEY, USERNAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USERNAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine(ID SERIAL PRIMARY KEY, DATE DATE, TIME TIME, STUDENT_ID INT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATE, TIME TIME, STUDENT_ID INT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure(ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT, CHAT_ID INT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT, CHAT_ID INT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу testing
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS testing(ID SERIAL PRIMARY KEY, APPLES TEXT, CHEAR TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS testing (ID SERIAL PRIMARY KEY, APPLES TEXT, CHEAR TEXT);`); err != nil {
+		return err
+	}
+
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS problem (ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
 		return err
 	}
 
