@@ -46,7 +46,7 @@ func collectDataGroup(chatID int64, groupName string, classLeader string) error 
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(group_name, class_leader, chat_id) VALUES($1, $2, $3)`
+	query := `INSERT INTO structure(group_name, class_leader, chat_id) VALUES($1, $2, $3);`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, groupName, classLeader, chatID); err != nil {
@@ -64,7 +64,7 @@ func collectTesting(apples string, chear string) error {
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(apples, chear) VALUES($1, $2)`
+	query := `INSERT INTO structure(apples, chear) VALUES($1, $2);`
 
 	// Выполнение SQL запроса
 	if _, err := db.Exec(query, apples, chear); err != nil {
@@ -101,10 +101,10 @@ func createTable() error {
 		return err
 	}
 
-	_, err = db.Exec("ALTER TABLE structure ADD COLUMN CHAT_ID INT")
-	if err != nil {
-		return err
-	}
+	//_, err = db.Exec("ALTER TABLE structure ADD COLUMN CHAT_ID INT")
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
