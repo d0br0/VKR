@@ -101,6 +101,11 @@ func createTable() error {
 		return err
 	}
 
+	_, err = db.Exec("ALTER TABLE structure ADD COLUMN CHAT_ID INT")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
