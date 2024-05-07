@@ -201,7 +201,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 			}
 			groupState.classLeader = update.Message.Text
 
-			if err := collectDataGroup(groupState.groupName, groupState.classLeader); err != nil {
+			if err := collectDataGroup(update.Message.Chat.ID, groupState.groupName, groupState.classLeader); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
