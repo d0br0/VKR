@@ -59,7 +59,7 @@ func collectData(username string, chatid int64, message string) error {
 	return nil
 }
 
-func collectDataGroup(chatID int64, groupName string, classLeader string) error {
+func collectDataGroup(chatID int64, nameGroup string, classLeader string) error {
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		return err
@@ -67,10 +67,10 @@ func collectDataGroup(chatID int64, groupName string, classLeader string) error 
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(group_name, class_leader, chat_id) VALUES($1, $2, $3);`
+	query := `INSERT INTO structure(name_group, class_leader, chat_id) VALUES($1, $2, $3);`
 
 	// Выполнение SQL запроса
-	if _, err := db.Exec(query, groupName, classLeader, chatID); err != nil {
+	if _, err := db.Exec(query, nameGroup, classLeader, chatID); err != nil {
 		return err
 	}
 
@@ -115,7 +115,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT, CHAT_ID INT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, NAME_GROUP TEXT, CLASS_LEADER TEXT, CHAT_ID INT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу testing

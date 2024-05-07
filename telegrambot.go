@@ -34,7 +34,7 @@ type UserState struct {
 }
 
 type GroupState struct {
-	groupName   string
+	nameGroup   string
 	classLeader string
 	step        int
 }
@@ -211,7 +211,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
 				return nil
 			}
-			groupState.groupName = update.Message.Text
+			groupState.nameGroup = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
 			groupState.step++
 		case 2:
@@ -221,13 +221,13 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 			}
 			groupState.classLeader = update.Message.Text
 
-			if err := collectDataGroup(update.Message.Chat.ID, groupState.groupName, groupState.classLeader); err != nil {
+			if err := collectDataGroup(update.Message.Chat.ID, groupState.nameGroup, groupState.classLeader); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
 				groupState.step = 0
-				groupState.groupName = ""
+				groupState.nameGroup = ""
 				groupState.classLeader = ""
 			}
 		}
