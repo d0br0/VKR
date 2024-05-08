@@ -74,7 +74,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу magazine
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATETIME, PAIR_NUMBER INT, STUDENT_NAME, TEACER_NAME);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATETIME, PAIR_NUMBER INT, STUDENT_NAME TEXT, TEACER_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу group
