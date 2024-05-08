@@ -61,6 +61,16 @@ func telegramBot() {
 			continue
 		}
 
+		userState, ok := userStates[update.Message.Chat.ID]
+		if ok {
+			// Если есть, обрабатываем сообщение в контексте создания группы
+			err := userState.makeUser(update, bot)
+			if err != nil {
+				log.Printf("Error making group: %v\n", err)
+			}
+			continue
+		}
+
 		groupState, ok := groupStates[update.Message.Chat.ID]
 		if ok {
 			// Если есть, обрабатываем сообщение в контексте создания группы
@@ -129,20 +139,6 @@ func telegramBot() {
 				}()
 			case "Сканирование Qr-code":
 				handleQRCodeMessage(bot, update)
-			case "testing":
-				apples := "Зелёные"
-				chear := "Табуретка"
-				collectTesting(apples, chear)
-				if os.Getenv("DB_SWITCH") == "on" {
-
-					//Отправляем username, chat_id, message, answer в БД
-					if err := collectData(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text); err != nil {
-
-						//Отправлем сообщение
-						msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Database error, but bot still working.")
-						bot.Send(msg)
-					}
-				}
 			default:
 				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 			}
@@ -221,7 +217,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 			}
 			groupState.classLeader = update.Message.Text
 
-			if err := collectDataGroup(update.Message.Chat.ID, groupState.nameGroup, groupState.classLeader); err != nil {
+			if err := collectDataGroup(groupState.nameGroup, groupState.classLeader); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {

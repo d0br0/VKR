@@ -19,7 +19,7 @@ var sslmode = os.Getenv("SSLMODE")
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
 // Собираем данные полученные ботом
-func collectDataUsers(username string, role string, fio string, groupName string) error {
+func collectDataUsers(userName string, role string, fio string, groupName string) error {
 
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
@@ -29,37 +29,18 @@ func collectDataUsers(username string, role string, fio string, groupName string
 	defer db.Close()
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(username, role, fio, groupName) VALUES($1, $2, $3, $4);`
+	data := `INSERT INTO users(user_Name, role, fio, group_Name) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, `@`+username, role, fio, groupName); err != nil {
+	if _, err = db.Exec(data, `@`+userName, role, fio, groupName); err != nil {
+		log.Printf("Error executing query: %v\n", err)
 		return err
 	}
 
 	return nil
 }
 
-func collectData(username string, chatid int64, message string) error {
-
-	//Подключаемся к БД
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	//Создаем SQL запрос
-	data := `INSERT INTO problem(username, chat_id, message) VALUES($1, $2, $3);`
-
-	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, `@`+username, chatid, message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func collectDataGroup(chatID int64, nameGroup string, classLeader string) error {
+func collectDataGroup(groupName string, classLeader string) error {
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		return err
@@ -67,28 +48,10 @@ func collectDataGroup(chatID int64, nameGroup string, classLeader string) error 
 	defer db.Close()
 
 	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(namegroup, classleader, chat_id) VALUES($1, $2, $3);`
+	query := `INSERT INTO structure(group_name, class_leader) VALUES($1, $2);`
 
 	// Выполнение SQL запроса
-	if _, err := db.Exec(query, nameGroup, classLeader, chatID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func collectTesting(apples string, chear string) error {
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO testing(apples, chear) VALUES($1, $2);`
-
-	// Выполнение SQL запроса
-	if _, err := db.Exec(query, apples, chear); err != nil {
+	if _, err := db.Exec(query, groupName, classLeader); err != nil {
 		log.Printf("Error executing query: %v\n", err)
 		return err
 	}
@@ -107,23 +70,15 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USERNAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USER_NAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATE, TIME TIME, STUDENT_ID INT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATETIME, PAIR_NUMBER INT, STUDENT_NAME, TEACER_NAME);`); err != nil {
 		return err
 	}
 	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, NAME_GROUP TEXT, CLASS_LEADER TEXT, CHAT_ID INT);`); err != nil {
-		return err
-	}
-	//Создаём таблицу testing
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS testing (ID SERIAL PRIMARY KEY, APPLES TEXT, CHEAR TEXT);`); err != nil {
-		return err
-	}
-
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS problem (ID SERIAL PRIMARY KEY, TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, USERNAME TEXT, CHAT_ID INT, MESSAGE TEXT, ANSWER TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
 		return err
 	}
 
@@ -137,7 +92,7 @@ func getNumberOfUsers() (int64, error) {
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
-		return 1, err
+		return 0, err
 	}
 	defer db.Close()
 
@@ -145,7 +100,7 @@ func getNumberOfUsers() (int64, error) {
 	row := db.QueryRow("SELECT COUNT(DISTINCT username) FROM users;")
 	err = row.Scan(&count)
 	if err != nil {
-		return 2, err
+		return 0, err
 	}
 
 	return count, nil
