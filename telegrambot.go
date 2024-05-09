@@ -22,7 +22,6 @@ var us = &UserState{}
 var gs = &GroupState{}
 var ss = &StudentState{}
 var adminPassword string = "1029384756"
-var isProcessing bool
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
@@ -106,68 +105,49 @@ func telegramBot() {
 			continue
 		}
 
-		if update.Message.Text != "" && !isProcessing {
-			switch role {
-			case "/start":
-				sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
-			case "Преподаватель":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
-			case "Студент":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code", "Вернуться в главное меню"})
-			case "Администратор":
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Пожалуйста, введите пароль администратора."))
-			case adminPassword:
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Создание группы", "Создание пользователя", "Вернуться в главное меню", "Число пользователей"})
-			case "Вернуться в главное меню":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Преподаватель", "Студент", "Администратор"})
-			case "Число пользователей":
-				handleNumberOfUsers(update, bot)
-			case "Создание группы":
-				gs.makeGroup(update, bot)
-			case "Создание пользователя":
-				us.makeUser(update, bot)
-			case "Создание студента":
-				ss.makeStudent(update, bot)
-			case "Стоп":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
-				timerControl <- true
-			case "Отметить присутствующих":
-				sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-				qrCodeData, err := generateQRCode("Присутствующий")
-				if err != nil {
-					log.Println("Ошибка при генерации QR-кода:", err)
-					return
+		if update.Message.Text != "" {
+			if role == "Администратор" {
+				switch update.Message.Text {
+				case "/start":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Создание группы", "Создание пользователя", "Отметить присутствующих", "Число пользователей"})
+				case "Вернуться в главное меню":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Создание группы", "Создание пользователя", "Отметить присутствующих", "Число пользователей"})
+				case "Число пользователей":
+					handleNumberOfUsers(update, bot)
+				case "Создание группы":
+					gs.makeGroup(update, bot)
+				case "Создание пользователя":
+					us.makeUser(update, bot)
+				case "Отметить присутствующих":
+					markStudents(bot, update, timerControl)
+				default:
+					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
-				err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-				if err != nil {
-					log.Println("Ошибка при отправке QR-кода в чат:", err)
-					return
+			} else if role == "Преподаватель" {
+				switch update.Message.Text {
+				case "/start":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Посмотреть журнал"})
+				case "Вернуться в главное меню":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Посмотреть журнал"})
+				case "Создание студента":
+					ss.makeStudent(update, bot)
+				case "Стоп":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+					timerControl <- true
+				case "Отметить присутствующих":
+					markStudents(bot, update, timerControl)
+				default:
+					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
-				go func() {
-					ticker := time.NewTicker(1 * time.Minute)
-					for {
-						select {
-						case <-ticker.C:
-							qrCodeData, err := generateQRCode("Присутствующий")
-							if err != nil {
-								log.Println("Ошибка при генерации QR-кода:", err)
-								return
-							}
-							err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-							if err != nil {
-								log.Println("Ошибка при отправке QR-кода в чат:", err)
-								return
-							}
-						case <-timerControl:
-							ticker.Stop()
-							return
-						}
-					}
-				}()
-			case "Сканирование Qr-code":
-				handleQRCodeMessage(bot, update)
-			default:
-				sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
+			} else if role == "Студент" {
+				switch update.Message.Text {
+				case "/start":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
+				case "Вернуться в главное меню":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
+				default:
+					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
+				}
 			}
 		}
 	}
@@ -373,6 +353,42 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 			}
 		}
 	}
+	return nil
+}
+
+func markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Update, timerControl chan bool) error {
+	sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
+	qrCodeData, err := generateQRCode("Присутствующий")
+	if err != nil {
+		log.Println("Ошибка при генерации QR-кода:", err)
+		return err
+	}
+	err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+	if err != nil {
+		log.Println("Ошибка при отправке QR-кода в чат:", err)
+		return err
+	}
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				qrCodeData, err := generateQRCode("Присутствующий")
+				if err != nil {
+					log.Println("Ошибка при генерации QR-кода:", err)
+					return
+				}
+				err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+				if err != nil {
+					log.Println("Ошибка при отправке QR-кода в чат:", err)
+					return
+				}
+			case <-timerControl:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 	return nil
 }
 
