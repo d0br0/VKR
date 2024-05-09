@@ -21,7 +21,6 @@ import (
 var us = &UserState{}
 var gs = &GroupState{}
 var ss = &StudentState{}
-var adminPassword string = "1029384756"
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
