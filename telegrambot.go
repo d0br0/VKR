@@ -70,6 +70,12 @@ func telegramBot() {
 			continue
 		}
 
+		role, err := getUserRole(update.Message.From.UserName)
+		if err != nil {
+			log.Printf("Error getting user role: %v\n", err)
+			continue
+		}
+
 		userState, ok := userStates[update.Message.Chat.ID]
 		if ok {
 			// Если есть, обрабатываем сообщение в контексте создания группы
@@ -101,11 +107,11 @@ func telegramBot() {
 		}
 
 		if update.Message.Text != "" && !isProcessing {
-			switch update.Message.Text {
+			switch role {
 			case "/start":
 				sendMenu(bot, update.Message.Chat.ID, "Здравствуй! Я бот для учёта посещаемости. Выбери кто ты.", []string{"Преподаватель", "Студент", "Администратор"})
 			case "Преподаватель":
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню"})
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 			case "Студент":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code", "Вернуться в главное меню"})
 			case "Администратор":

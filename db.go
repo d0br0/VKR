@@ -59,6 +59,28 @@ func collectDataGroup(groupName string, classLeader string) error {
 	return nil
 }
 
+func getUserRole(username string) (string, error) {
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	var role string
+	err = db.QueryRow("SELECT ROLE FROM users WHERE user = $1", username).Scan(&role)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Если пользователь не найден, возвращаем пустую строку и ошибку
+			return "", fmt.Errorf("user not found")
+		}
+		// Возвращаем ошибку, если произошла другая ошибка
+		return "", err
+	}
+
+	// Возвращаем роль пользователя
+	return role, nil
+}
+
 // Создаем таблицы: users, magazine, group в БД при подключении к ней
 func createTable() error {
 
