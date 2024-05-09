@@ -67,11 +67,11 @@ func getUserRole(username string) (string, error) {
 	defer db.Close()
 
 	var role string
-	err = db.QueryRow("SELECT ROLE FROM users WHERE user = $1", `@`+username).Scan(&role)
+	err = db.QueryRow("SELECT ROLE FROM users WHERE user = $1", username).Scan(&role)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Если пользователь не найден, возвращаем пустую строку и ошибку
-			return "", fmt.Errorf("user not found")
+			return "", fmt.Errorf(username)
 		}
 		// Возвращаем ошибку, если произошла другая ошибка
 		return "", err
