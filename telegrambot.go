@@ -225,6 +225,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				groupState.step = 0
 				groupState.nameGroup = ""
 				groupState.classLeader = ""
+				delete(groupStates, update.Message.Chat.ID)
 			}
 		}
 	}
