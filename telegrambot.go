@@ -46,6 +46,12 @@ type StudentState struct {
 	step      int
 }
 
+type GenerateState struct {
+	date time.Time
+	para int
+	step int
+}
+
 func telegramBot() {
 	//Создаем бота
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
