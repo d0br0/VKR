@@ -21,9 +21,11 @@ import (
 var us = &UserState{}
 var gs = &GroupState{}
 var ss = &StudentState{}
+var gqs = &GenerateState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
+var generateState = make(map[int64]*GenerateState)
 
 type UserState struct {
 	username  string
@@ -47,7 +49,6 @@ type StudentState struct {
 }
 
 type GenerateState struct {
-	date time.Time
 	para int
 	step int
 }
