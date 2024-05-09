@@ -32,7 +32,7 @@ func collectDataUsers(userName string, role string, fio string, groupName string
 	data := `INSERT INTO users(user_Name, role, fio, group_Name) VALUES($1, $2, $3, $4);`
 
 	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, `@`+userName, role, fio, groupName); err != nil {
+	if _, err = db.Exec(data, userName, role, fio, groupName); err != nil {
 		log.Printf("Error executing query: %v\n", err)
 		return err
 	}
@@ -60,8 +60,11 @@ func collectDataGroup(groupName string, classLeader string) error {
 }
 
 func getUserRole(username string) (string, error) {
+	log.Printf("Getting role for user: %s", username) // Логирование имени пользователя
+
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
+		log.Printf("Error opening database: %v", err) // Логирование ошибки при открытии базы данных
 		return "", err
 	}
 	defer db.Close()
@@ -70,14 +73,15 @@ func getUserRole(username string) (string, error) {
 	err = db.QueryRow("SELECT ROLE FROM users WHERE user = $1", username).Scan(&role)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Если пользователь не найден, возвращаем пустую строку и ошибку
-			return "", fmt.Errorf(username)
+			log.Printf("User not found: %s", username) // Логирование, если пользователь не найден
+			return "", fmt.Errorf("user not found")
 		}
-		// Возвращаем ошибку, если произошла другая ошибка
+		log.Printf("Error executing query: %v", err) // Логирование ошибки при выполнении запроса
 		return "", err
 	}
 
-	// Возвращаем роль пользователя
+	log.Printf("Found role for user %s: %s", username, role) // Логирование найденной роли
+
 	return role, nil
 }
 
