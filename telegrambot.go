@@ -147,6 +147,8 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
 				case "Вернуться в главное меню":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
+				case "Сканирование Qr-code":
+					handleQRCodeMessage(bot, update)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
