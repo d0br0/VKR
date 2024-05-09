@@ -20,10 +20,12 @@ import (
 
 var us = &UserState{}
 var gs = &GroupState{}
+var ss = &StudentState{}
 var adminPassword string = "1029384756"
 var isProcessing bool
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
+var studentStates = make(map[int64]*StudentState)
 
 type UserState struct {
 	username  string
@@ -37,6 +39,13 @@ type GroupState struct {
 	nameGroup   string
 	classLeader string
 	step        int
+}
+
+type StudentState struct {
+	username  string
+	fio       string
+	groupName string
+	step      int
 }
 
 func telegramBot() {
@@ -81,6 +90,16 @@ func telegramBot() {
 			continue
 		}
 
+		studentState, ok := studentStates[update.Message.Chat.ID]
+		if ok {
+			// Если есть, обрабатываем сообщение в контексте создания группы
+			err := studentState.makeStudent(update, bot)
+			if err != nil {
+				log.Printf("Error making group: %v\n", err)
+			}
+			continue
+		}
+
 		if update.Message.Text != "" && !isProcessing {
 			switch update.Message.Text {
 			case "/start":
@@ -101,6 +120,8 @@ func telegramBot() {
 				gs.makeGroup(update, bot)
 			case "Создание пользователя":
 				us.makeUser(update, bot)
+			case "Создание студента":
+				ss.makeStudent(update, bot)
 			case "Стоп":
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 				timerControl <- true
@@ -288,6 +309,61 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				userState.username = ""
 				userState.role = ""
 				userState.fio = ""
+				delete(userStates, update.Message.Chat.ID)
+			}
+		}
+	}
+	return nil
+}
+
+func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+
+	// Получаем состояние пользователя из карты по ID чата
+	studentState, ok := studentStates[update.Message.Chat.ID]
+	if !ok {
+		// Если состояние пользователя не найдено, создаем новое состояние
+		studentState = &StudentState{}
+		studentStates[update.Message.Chat.ID] = studentState
+	}
+
+	if os.Getenv("DB_SWITCH") == "on" {
+		switch studentState.step {
+		case 0:
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+			studentState.step++
+		case 1:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
+				return nil
+			}
+			studentState.username = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
+			studentState.step++
+		case 2:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
+				return nil
+			}
+			studentState.fio = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
+			studentState.step++
+		case 3:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
+				return nil
+			}
+			studentState.groupName = update.Message.Text
+
+			if err := collectDataUsers(studentState.username, "Студент", studentState.fio, studentState.groupName); err != nil {
+				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				return fmt.Errorf("collectDataGroup failed: %w", err)
+			} else {
+				sendMessage(bot, update.Message.Chat.ID, "Пользователь успешно создан!")
+				studentState.step = 0
+				studentState.groupName = ""
+				studentState.username = ""
+				studentState.fio = ""
+				delete(studentStates, update.Message.Chat.ID)
 			}
 		}
 	}
