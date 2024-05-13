@@ -125,7 +125,7 @@ func telegramBot() {
 				case "Создание пользователя":
 					us.makeUser(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					markStudents(bot, update, timerControl)
