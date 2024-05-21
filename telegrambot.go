@@ -450,7 +450,9 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if update.Message.Photo != nil {
 		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
+		sendMessage(bot, update.Message.Chat.ID, "1")
 		fileURL, err := bot.GetFileDirectURL(fileID)
+		sendMessage(bot, update.Message.Chat.ID, "2")
 		if err != nil {
 			log.Println("Ошибка при получении URL файла:", err)
 			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении URL файла: "+err.Error())
@@ -465,6 +467,7 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 		defer resp.Body.Close()
 
+		sendMessage(bot, update.Message.Chat.ID, "3")
 		img, _, err := image.Decode(resp.Body)
 		if err != nil {
 			log.Println("Ошибка при декодировании изображения:", err)
