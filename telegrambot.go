@@ -453,14 +453,14 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		fileURL, err := bot.GetFileDirectURL(fileID)
 		if err != nil {
 			log.Println("Ошибка при получении URL файла:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
+			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении URL файла: "+err.Error())
 			return
 		}
 
 		resp, err := http.Get(fileURL)
 		if err != nil {
 			log.Println("Ошибка при получении изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
+			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении изображения: "+err.Error())
 			return
 		}
 		defer resp.Body.Close()
@@ -468,14 +468,14 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		img, _, err := image.Decode(resp.Body)
 		if err != nil {
 			log.Println("Ошибка при декодировании изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
+			sendMessage(bot, update.Message.Chat.ID, "Ошибка при декодировании изображения: "+err.Error())
 			return
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 		if err != nil {
 			log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
+			sendMessage(bot, update.Message.Chat.ID, "Ошибка при преобразовании изображения в двоичный растровый формат: "+err.Error())
 			return
 		}
 
@@ -483,7 +483,6 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		result, err := qrReader.Decode(bmp, nil)
 		if err != nil {
 			log.Println("Ошибка при чтении QR-кода:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода:")
 			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
 			return
 		}
