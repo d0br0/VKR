@@ -57,6 +57,10 @@ type GenerateState struct {
 	step int
 }
 
+type BotState struct {
+	waitingForQRCode bool
+}
+
 func telegramBot() {
 	//Создаем бота
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
@@ -448,7 +452,10 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 }
 
 func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	if update.Message.Photo != nil {
+	if !state.waitingForQRCode {
+		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
+		state.waitingForQRCode = true
+	} else if update.Message.Photo != nil {
 		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
 		sendMessage(bot, update.Message.Chat.ID, "1")
 		fileURL, err := bot.GetFileDirectURL(fileID)
@@ -491,6 +498,7 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 
 		sendMessage(bot, update.Message.Chat.ID, result.GetText())
+		state.waitingForQRCode = false
 	} else {
 		sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 	}
