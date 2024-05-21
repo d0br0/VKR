@@ -22,6 +22,7 @@ var us = &UserState{}
 var gs = &GroupState{}
 var ss = &StudentState{}
 var gqs = &GenerateState{}
+var bs = &BotState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
@@ -163,7 +164,7 @@ func telegramBot() {
 				case "Вернуться в главное меню":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
 				case "Сканирование Qr-code":
-					handleQRCodeMessage(bot, update)
+					handleQRCodeMessage(bot, update, bs)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -451,7 +452,7 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update, state *BotState) {
 	if !state.waitingForQRCode {
 		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
 		state.waitingForQRCode = true
