@@ -2,13 +2,10 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"image"
-	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -162,7 +159,7 @@ func telegramBot() {
 				case "Вернуться в главное меню":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
 				case "Сканирование Qr-code":
-					QRCodeMessage(bot, update)
+					handleQRCodeMessage(bot, update)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -457,14 +454,12 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		fileURL, err := bot.GetFileDirectURL(fileID)
 		if err != nil {
 			log.Println("Ошибка при получении URL файла:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении URL файла:")
 			return
 		}
 
 		resp, err := http.Get(fileURL)
 		if err != nil {
 			log.Println("Ошибка при получении изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении изображения:")
 			return
 		}
 		defer resp.Body.Close()
@@ -472,14 +467,12 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		img, _, err := image.Decode(resp.Body)
 		if err != nil {
 			log.Println("Ошибка при декодировании изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при декодировании изображения:")
 			return
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 		if err != nil {
 			log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при преобразовании изображения в двоичный растровый формат:")
 			return
 		}
 
@@ -495,63 +488,6 @@ func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	} else {
 		sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 	}
-}
-
-func QRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	photos := *update.Message.Photo
-	fileID := photos[len(photos)-1].FileID
-	fileURL, err := bot.GetFileDirectURL(fileID)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	response, err := http.Get(fileURL)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer response.Body.Close()
-
-	imgData, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	img, err := jpeg.Decode(bytes.NewReader(imgData))
-	if err != nil {
-		log.Panic(err)
-	}
-
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, img, nil)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	req, err := http.NewRequest("POST", "https://code-qr.ru/decoder", buf)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	var qrResp QrCodeResponse
-	err = json.Unmarshal(body, &qrResp)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, qrResp.Data)
-	bot.Send(msg)
 }
 
 func main() {
