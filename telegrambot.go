@@ -22,11 +22,12 @@ var us = &UserState{}
 var gs = &GroupState{}
 var ss = &StudentState{}
 var gqs = &GenerateState{}
-var bs = &BotState{}
+var sqs = &ScanState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
 var generateState = make(map[int64]*GenerateState)
+var scanStates = make(map[int64]*ScanState)
 
 type QrCodeResponse struct {
 	Data string `json:"data"`
@@ -58,8 +59,8 @@ type GenerateState struct {
 	step int
 }
 
-type BotState struct {
-	waitingForQRCode bool
+type ScanState struct {
+	step int
 }
 
 func telegramBot() {
@@ -164,7 +165,7 @@ func telegramBot() {
 				case "Вернуться в главное меню":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
 				case "Сканирование Qr-code":
-					handleQRCodeMessage(bot, update, bs)
+					sqs.handleQRCodeMessage(bot, update)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -452,56 +453,58 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update, state *BotState) {
-	if !state.waitingForQRCode {
+func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	switch scanStates.step {
+	case 0:
 		sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
-		state.waitingForQRCode = true
-	} else if update.Message.Photo != nil {
-		fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
-		sendMessage(bot, update.Message.Chat.ID, "1")
-		fileURL, err := bot.GetFileDirectURL(fileID)
-		sendMessage(bot, update.Message.Chat.ID, "2")
-		if err != nil {
-			log.Println("Ошибка при получении URL файла:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении URL файла: "+err.Error())
-			return
-		}
+		scanStates.step++
+	case 1:
+		if update.Message.Photo != nil {
+			fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
+			sendMessage(bot, update.Message.Chat.ID, "1")
+			fileURL, err := bot.GetFileDirectURL(fileID)
+			sendMessage(bot, update.Message.Chat.ID, "2")
+			if err != nil {
+				log.Println("Ошибка при получении URL файла:", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении URL файла: "+err.Error())
+				return
+			}
 
-		resp, err := http.Get(fileURL)
-		if err != nil {
-			log.Println("Ошибка при получении изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении изображения: "+err.Error())
-			return
-		}
-		defer resp.Body.Close()
+			resp, err := http.Get(fileURL)
+			if err != nil {
+				log.Println("Ошибка при получении изображения:", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка при получении изображения: "+err.Error())
+				return
+			}
+			defer resp.Body.Close()
 
-		sendMessage(bot, update.Message.Chat.ID, "3")
-		img, _, err := image.Decode(resp.Body)
-		if err != nil {
-			log.Println("Ошибка при декодировании изображения:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при декодировании изображения: "+err.Error())
-			return
-		}
+			sendMessage(bot, update.Message.Chat.ID, "3")
+			img, _, err := image.Decode(resp.Body)
+			if err != nil {
+				log.Println("Ошибка при декодировании изображения:", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка при декодировании изображения: "+err.Error())
+				return
+			}
 
-		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-		if err != nil {
-			log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при преобразовании изображения в двоичный растровый формат: "+err.Error())
-			return
-		}
+			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+			if err != nil {
+				log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка при преобразовании изображения в двоичный растровый формат: "+err.Error())
+				return
+			}
 
-		qrReader := gozxingqr.NewQRCodeReader()
-		result, err := qrReader.Decode(bmp, nil)
-		if err != nil {
-			log.Println("Ошибка при чтении QR-кода:", err)
-			sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
-			return
-		}
+			qrReader := gozxingqr.NewQRCodeReader()
+			result, err := qrReader.Decode(bmp, nil)
+			if err != nil {
+				log.Println("Ошибка при чтении QR-кода:", err)
+				sendMessage(bot, update.Message.Chat.ID, "Ошибка при чтении QR-кода: "+err.Error())
+				return
+			}
 
-		sendMessage(bot, update.Message.Chat.ID, result.GetText())
-		state.waitingForQRCode = false
-	} else {
-		sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
+			sendMessage(bot, update.Message.Chat.ID, result.GetText())
+		} else {
+			sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
+		}
 	}
 }
 
