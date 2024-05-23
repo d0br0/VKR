@@ -7,6 +7,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -25,7 +26,7 @@ var sqs = &ScanState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
-var generateState = make(map[int64]*GenerateState)
+var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
 
 type QrCodeResponse struct {
@@ -164,7 +165,7 @@ func telegramBot() {
 				case "Вернуться в главное меню":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Сканирование Qr-code"})
 				case "Сканирование Qr-code":
-					sqs.handleQRCodeMessage(bot, update)
+					sqs.handleQRCodeMessage(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -452,8 +453,7 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
-
+func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	scanState, ok := scanStates[update.Message.Chat.ID]
 	if !ok {
 		//Если состояние пользователя не найдено, создаем новое состояние
@@ -479,14 +479,15 @@ func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.
 				return err
 			}
 
-			// open and decode image file
-			file, err := os.Open(fileURL)
+			// download and decode image file
+			resp, err := http.Get(fileURL)
 			if err != nil {
-				log.Println("Ошибка при получении изображения:", err)
+				log.Println("Ошибка при загрузке изображения:", err)
 				return err
 			}
+			defer resp.Body.Close()
 
-			img, _, err := image.Decode(file)
+			img, _, err := image.Decode(resp.Body)
 			if err != nil {
 				log.Println("Ошибка при декодировании изображения:", err)
 				return err
@@ -509,6 +510,8 @@ func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
 			bot.Send(msg)
+			scanState.step = 0
+			delete(scanStates, update.Message.Chat.ID)
 		}
 	}
 
