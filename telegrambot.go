@@ -125,17 +125,15 @@ func telegramBot() {
 			if role == "Администратор" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Число пользователей", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Число пользователей", "Вернуться в главное меню"})
-				case "Число пользователей":
-					handleNumberOfUsers(update, bot)
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
 				case "Создание группы":
 					gs.makeGroup(update, bot)
 				case "Создание пользователя":
 					us.makeUser(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню", "Число пользователей"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(bot, update, timerControl)
@@ -145,9 +143,9 @@ func telegramBot() {
 			} else if role == "Преподаватель" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Посмотреть журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Посмотреть журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
 				case "Создание студента":
 					ss.makeStudent(update, bot)
 				case "Стоп":
@@ -186,33 +184,6 @@ func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options []stri
 	if err != nil {
 		log.Printf("Error sending message: %v\n", err)
 	}
-}
-
-func handleNumberOfUsers(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	if os.Getenv("DB_SWITCH") == "on" {
-
-		//Присваиваем количество пользоватьелей использовавших бота в num переменную
-		num, err := getNumberOfUsers()
-		if err != nil {
-
-			//Отправлем сообщение
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка базы данных")
-			bot.Send(msg)
-		}
-
-		//Создаем строку которая содержит колличество пользователей использовавших бота
-		ans := fmt.Sprintf("%d Число пользователей:", num)
-
-		//Отправлем сообщение
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, ans)
-		bot.Send(msg)
-	} else {
-
-		//Отправлем сообщение
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "База данных не подключена, я не могу сообщить число пользователей :(")
-		bot.Send(msg)
-	}
-	return nil
 }
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
