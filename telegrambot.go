@@ -357,12 +357,9 @@ func (gqs *GenerateState) markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Upd
 	}
 	switch generateState.step {
 	case 0:
-		sendMenu(bot, update.Message.Chat.ID, "Выберите номер группы", []string{"1"})
-		generateState.step++
-	case 1:
 		sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
 		generateState.step++
-	case 2:
+	case 1:
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 		qrCodeData, err := generateQRCode("Присутствующий")
 		if err != nil {
@@ -395,6 +392,7 @@ func (gqs *GenerateState) markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Upd
 				}
 			}
 		}()
+		delete(generateStates, update.Message.Chat.ID)
 	}
 	return nil
 }
