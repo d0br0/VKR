@@ -386,7 +386,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 		}
 		generateState.para = update.Message.Text
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-		qrCodeData, err := generateQRCode("Присутствующий")
+		qrCodeData, err := generateQRCode(generateState.para)
 		if err != nil {
 			log.Println("Ошибка при генерации QR-кода:", err)
 			return err
@@ -470,6 +470,8 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 		scanStates[update.Message.Chat.ID] = scanState
 	}
 	if os.Getenv("DB_SWITCH") == "on" {
+		t := time.Now().UTC()
+		t.Format("2006 01 02")
 		switch scanState.step {
 		case 0:
 			sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
@@ -514,17 +516,13 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
 				bot.Send(msg)
-				scanState.step = 0
 				delete(scanStates, update.Message.Chat.ID)
 				//scanState.step++
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 			}
-			//case 2:
-
 		}
 	}
-
 	return nil
 }
 
