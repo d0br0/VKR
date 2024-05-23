@@ -511,7 +511,7 @@ func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.
 			bot.Send(msg)
 		}
 	}
-	delete(scanStates, update.Message.Chat.ID)
+
 	return nil
 }
 
