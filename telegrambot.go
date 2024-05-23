@@ -121,6 +121,26 @@ func telegramBot() {
 			continue
 		}
 
+		generateState, ok := generateStates[update.Message.Chat.ID]
+		if ok {
+			// Если есть, обрабатываем сообщение в контексте создания группы
+			err := generateState.markStudents(update, bot, timerControl)
+			if err != nil {
+				log.Printf("Error making group: %v\n", err)
+			}
+			continue
+		}
+
+		scanState, ok := scanStates[update.Message.Chat.ID]
+		if ok {
+			// Если есть, обрабатываем сообщение в контексте создания группы
+			err := scanState.handleQRCodeMessage(update, bot)
+			if err != nil {
+				log.Printf("Error making group: %v\n", err)
+			}
+			continue
+		}
+
 		if update.Message.Text != "" {
 			if role == "Администратор" {
 				switch update.Message.Text {
@@ -136,7 +156,7 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
 					timerControl <- true
 				case "Отметить присутствующих":
-					gqs.markStudents(bot, update, timerControl)
+					gqs.markStudents(update, bot, timerControl)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -152,7 +172,7 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 					timerControl <- true
 				case "Отметить присутствующих":
-					gqs.markStudents(bot, update, timerControl)
+					gqs.markStudents(update, bot, timerControl)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -348,7 +368,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 	return nil
 }
 
-func (gqs *GenerateState) markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Update, timerControl chan bool) error {
+func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.BotAPI, timerControl chan bool) error {
 	generateState, ok := generateStates[update.Message.Chat.ID]
 	if !ok {
 		// Если состояние пользователя не найдено, создаем новое состояние
