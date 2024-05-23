@@ -7,7 +7,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -469,43 +468,24 @@ func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.
 	case 1:
 		if update.Message.Photo != nil {
 			fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
-			sendMessage(bot, update.Message.Chat.ID, "1")
 			fileURL, err := bot.GetFileDirectURL(fileID)
-			sendMessage(bot, update.Message.Chat.ID, "2")
 			if err != nil {
-				log.Println("Ошибка при получении URL файла:", err)
-				return err
+				log.Panic(err)
 			}
 
-			resp, err := http.Get(fileURL)
-			if err != nil {
-				log.Println("Ошибка при получении изображения:", err)
-				return err
-			}
-			defer resp.Body.Close()
+			// open and decode image file
+			file, _ := os.Open(fileURL)
+			img, _, _ := image.Decode(file)
 
-			sendMessage(bot, update.Message.Chat.ID, "3")
-			img, _, err := image.Decode(resp.Body)
-			if err != nil {
-				log.Println("Ошибка при декодировании изображения:", err)
-				return err
-			}
+			// prepare BinaryBitmap
+			bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
 
-			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-			if err != nil {
-				log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
-				return err
-			}
-
+			// decode image
 			qrReader := gozxingqr.NewQRCodeReader()
-			result, err := qrReader.Decode(bmp, nil)
-			if err != nil {
-				log.Println("Ошибка при чтении QR-кода:", err)
-				return err
-			}
+			result, _ := qrReader.Decode(bmp, nil)
 
-			sendMessage(bot, update.Message.Chat.ID, result.GetText())
-
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
+			bot.Send(msg)
 		} else {
 
 			sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
