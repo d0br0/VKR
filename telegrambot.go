@@ -124,9 +124,9 @@ func telegramBot() {
 			if role == "Администратор" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Создание группы", "Создание пользователя", "Отметить присутствующих", "Число пользователей", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Число пользователей", "Вернуться в главное меню"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Создание группы", "Создание пользователя", "Отметить присутствующих", "Число пользователей", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Число пользователей", "Вернуться в главное меню"})
 				case "Число пользователей":
 					handleNumberOfUsers(update, bot)
 				case "Создание группы":
@@ -134,7 +134,7 @@ func telegramBot() {
 				case "Создание пользователя":
 					us.makeUser(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню", "Число пользователей"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					markStudents(bot, update, timerControl)
@@ -470,19 +470,37 @@ func (sqs *ScanState) handleQRCodeMessage(bot *tgbotapi.BotAPI, update tgbotapi.
 			fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
 			fileURL, err := bot.GetFileDirectURL(fileID)
 			if err != nil {
-				log.Panic(err)
+				log.Println("Ошибка при получении URL файла:", err)
+				return err
 			}
 
 			// open and decode image file
-			file, _ := os.Open(fileURL)
-			img, _, _ := image.Decode(file)
+			file, err := os.Open(fileURL)
+			if err != nil {
+				log.Println("Ошибка при получении изображения:", err)
+				return err
+			}
+
+			img, _, err := image.Decode(file)
+			if err != nil {
+				log.Println("Ошибка при декодировании изображения:", err)
+				return err
+			}
 
 			// prepare BinaryBitmap
-			bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
+			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+			if err != nil {
+				log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
+				return err
+			}
 
 			// decode image
 			qrReader := gozxingqr.NewQRCodeReader()
-			result, _ := qrReader.Decode(bmp, nil)
+			result, err := qrReader.Decode(bmp, nil)
+			if err != nil {
+				log.Println("Ошибка при чтении QR-кода:", err)
+				return err
+			}
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
 			bot.Send(msg)
