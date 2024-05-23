@@ -55,7 +55,7 @@ type StudentState struct {
 }
 
 type GenerateState struct {
-	para int
+	para string
 	step int
 }
 
@@ -360,6 +360,11 @@ func (gqs *GenerateState) markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Upd
 		sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
 		generateState.step++
 	case 1:
+		if update.Message.Text == "" {
+			sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
+			return nil
+		}
+		generateState.para = update.Message.Text
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 		qrCodeData, err := generateQRCode("Присутствующий")
 		if err != nil {
