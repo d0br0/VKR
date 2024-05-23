@@ -475,7 +475,6 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 			sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
 			scanState.step++
 		case 1:
-			sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
 			if update.Message.Photo != nil {
 				scanState.step++
 			} else {
