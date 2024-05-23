@@ -503,7 +503,7 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 	return nil
 }
 
-func magazine()
+//func magazine()
 
 func main() {
 
