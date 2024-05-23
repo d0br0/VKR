@@ -138,7 +138,7 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Вернуться в главное меню", "Число пользователей"})
 					timerControl <- true
 				case "Отметить присутствующих":
-					markStudents(bot, update, timerControl)
+					gqs.markStudents(bot, update, timerControl)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -154,7 +154,7 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
 					timerControl <- true
 				case "Отметить присутствующих":
-					markStudents(bot, update, timerControl)
+					gqs.markStudents(bot, update, timerControl)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -377,39 +377,54 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 	return nil
 }
 
-func markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Update, timerControl chan bool) error {
-	sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-	qrCodeData, err := generateQRCode("Присутствующий")
-	if err != nil {
-		log.Println("Ошибка при генерации QR-кода:", err)
-		return err
+func (gqs *GenerateState) markStudents(bot *tgbotapi.BotAPI, update tgbotapi.Update, timerControl chan bool) error {
+	generateState, ok := generateStates[update.Message.Chat.ID]
+	if !ok {
+		// Если состояние пользователя не найдено, создаем новое состояние
+		generateState = &GenerateState{}
+		generateStates[update.Message.Chat.ID] = generateState
 	}
-	err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-	if err != nil {
-		log.Println("Ошибка при отправке QR-кода в чат:", err)
-		return err
-	}
-	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
-		for {
-			select {
-			case <-ticker.C:
-				qrCodeData, err := generateQRCode("Присутствующий")
-				if err != nil {
-					log.Println("Ошибка при генерации QR-кода:", err)
-					return
-				}
-				err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-				if err != nil {
-					log.Println("Ошибка при отправке QR-кода в чат:", err)
-					return
-				}
-			case <-timerControl:
-				ticker.Stop()
-				return
-			}
+	switch generateState.step {
+	case 0:
+		sendMenu(bot, update.Message.Chat.ID, "Выберите номер группы", []string{"1"})
+		generateState.step++
+	case 1:
+		sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
+		generateState.step++
+	case 2:
+		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
+		qrCodeData, err := generateQRCode("Присутствующий")
+		if err != nil {
+			log.Println("Ошибка при генерации QR-кода:", err)
+			return err
 		}
-	}()
+		err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+		if err != nil {
+			log.Println("Ошибка при отправке QR-кода в чат:", err)
+			return err
+		}
+		go func() {
+			ticker := time.NewTicker(1 * time.Minute)
+			for {
+				select {
+				case <-ticker.C:
+					qrCodeData, err := generateQRCode("Присутствующий")
+					if err != nil {
+						log.Println("Ошибка при генерации QR-кода:", err)
+						return
+					}
+					err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+					if err != nil {
+						log.Println("Ошибка при отправке QR-кода в чат:", err)
+						return
+					}
+				case <-timerControl:
+					ticker.Stop()
+					return
+				}
+			}
+		}()
+	}
 	return nil
 }
 
@@ -518,6 +533,8 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 
 	return nil
 }
+
+func magazine()
 
 func main() {
 
