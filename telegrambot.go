@@ -476,51 +476,52 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 			scanState.step++
 		case 1:
 			if update.Message.Photo != nil {
-				scanState.step++
+				fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
+				fileURL, err := bot.GetFileDirectURL(fileID)
+				if err != nil {
+					log.Println("Ошибка при получении URL файла:", err)
+					return err
+				}
+
+				// download and decode image file
+				resp, err := http.Get(fileURL)
+				if err != nil {
+					log.Println("Ошибка при загрузке изображения:", err)
+					return err
+				}
+				defer resp.Body.Close()
+
+				img, _, err := image.Decode(resp.Body)
+				if err != nil {
+					log.Println("Ошибка при декодировании изображения:", err)
+					return err
+				}
+
+				// prepare BinaryBitmap
+				bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+				if err != nil {
+					log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
+					return err
+				}
+
+				// decode image
+				qrReader := gozxingqr.NewQRCodeReader()
+				result, err := qrReader.Decode(bmp, nil)
+				if err != nil {
+					log.Println("Ошибка при чтении QR-кода:", err)
+					return err
+				}
+
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
+				bot.Send(msg)
+				scanState.step = 0
+				delete(scanStates, update.Message.Chat.ID)
+				//scanState.step++
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 			}
-		case 2:
-			fileID := (*update.Message.Photo)[len(*update.Message.Photo)-1].FileID
-			fileURL, err := bot.GetFileDirectURL(fileID)
-			if err != nil {
-				log.Println("Ошибка при получении URL файла:", err)
-				return err
-			}
+			//case 2:
 
-			// download and decode image file
-			resp, err := http.Get(fileURL)
-			if err != nil {
-				log.Println("Ошибка при загрузке изображения:", err)
-				return err
-			}
-			defer resp.Body.Close()
-
-			img, _, err := image.Decode(resp.Body)
-			if err != nil {
-				log.Println("Ошибка при декодировании изображения:", err)
-				return err
-			}
-
-			// prepare BinaryBitmap
-			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-			if err != nil {
-				log.Println("Ошибка при преобразовании изображения в двоичный растровый формат:", err)
-				return err
-			}
-
-			// decode image
-			qrReader := gozxingqr.NewQRCodeReader()
-			result, err := qrReader.Decode(bmp, nil)
-			if err != nil {
-				log.Println("Ошибка при чтении QR-кода:", err)
-				return err
-			}
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
-			bot.Send(msg)
-			scanState.step = 0
-			delete(scanStates, update.Message.Chat.ID)
 		}
 	}
 
