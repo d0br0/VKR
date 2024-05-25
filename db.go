@@ -93,18 +93,27 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 	}
 	defer db.Close()
 
-	// Подготавливаем запрос на вставку данных
-	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) VALUES($1, $2, $3, $4)")
-	if err != nil {
+	// SQL запрос для добавления новой группы в таблицу "group"
+	query := `INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) VALUES($1, $2, $3, $4);`
+
+	// Выполнение SQL запроса
+	if _, err := db.Exec(query, date, para, username, repeat); err != nil {
+		log.Printf("Error executing query: %v\n", err)
 		return err
 	}
-	defer stmt.Close()
+
+	// Подготавливаем запрос на вставку данных
+	//stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) VALUES($1, $2, $3, $4)")
+	//if err != nil {
+	//	return err
+	//}
+	//defer stmt.Close()
 
 	// Выполняем запрос, передавая данные
-	_, err = stmt.Exec(date, para, username, repeat)
-	if err != nil {
-		return err
-	}
+	//_, err = stmt.Exec(date, para, username, repeat)
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
