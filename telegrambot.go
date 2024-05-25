@@ -388,24 +388,25 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			return nil
 		}
 		generateState.para = update.Message.Text
-		var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, gqs.repeat)
+
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-		qrCodeData, err := generateQRCode(allVars)
-		if err != nil {
-			log.Println("Ошибка при генерации QR-кода:", err)
-			return err
-		}
-		err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-		if err != nil {
-			log.Println("Ошибка при отправке QR-кода в чат:", err)
-			return err
-		}
+		//qrCodeData, err := generateQRCode(allVars)
+		//if err != nil {
+		//log.Println("Ошибка при генерации QR-кода:", err)
+		//return err
+		//}
+		//err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+		//if err != nil {
+		//	log.Println("Ошибка при отправке QR-кода в чат:", err)
+		//	return err
+		//}
 		go func() {
 			ticker := time.NewTicker(1 * time.Minute)
 			for {
 				select {
 				case <-ticker.C:
 					gqs.repeat++
+					var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, gqs.repeat)
 					qrCodeData, err := generateQRCode(allVars)
 					if err != nil {
 						log.Println("Ошибка при генерации QR-кода:", err)
