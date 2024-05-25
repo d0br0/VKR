@@ -123,7 +123,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу magazine
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE TEXT, PAIR_NUMBER TEXT, TEACER_NAME TEXT, REPEAT INT, STUDENT_NAME TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE TEXT, PAIR_NUMBER TEXT, TEACHER_NAME TEXT, REPEAT INT, STUDENT_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу group
