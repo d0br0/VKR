@@ -486,6 +486,7 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 }
 
 func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	username := update.Message.From.UserName
 	scanState, ok := scanStates[update.Message.Chat.ID]
 	if !ok {
 		//Если состояние пользователя не найдено, создаем новое состояние
@@ -532,6 +533,12 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 				result, err := qrReader.Decode(bmp, nil)
 				if err != nil {
 					log.Println("Ошибка при чтении QR-кода:", err)
+					return err
+				}
+
+				err = compareWithDatabase(result.String(), username, bot, update)
+				if err != nil {
+					log.Println("Ошибка при сравнении данных:", err)
 					return err
 				}
 

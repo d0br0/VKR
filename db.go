@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/lib/pq"
 )
 
@@ -125,6 +126,52 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 			return err
 		}
 	}
+
+	return nil
+}
+
+func compareWithDatabase(qrData string, username string, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	// Подключаемся к БД
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// Извлекаем данные из базы данных
+	row := db.QueryRow("SELECT * FROM magazine WHERE CONCAT(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) = $1", qrData)
+	var date, pairNumber, teacherName string
+	var repeat int
+	err = row.Scan(&date, &pairNumber, &teacherName, &repeat)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Если данных нет в базе данных
+			log.Println("Данные QR-кода не найдены в базе данных")
+			sendMessage(bot, update.Message.Chat.ID, "Запись не произошла, сфотографируйте заново qr code и пришлите сюда")
+		} else {
+			// Если произошла другая ошибка
+			log.Println("Ошибка при извлечении данных из базы данных:", err)
+		}
+		return err
+	}
+
+	// Если данные найдены в базе данных
+	log.Println("Данные QR-кода найдены в базе данных")
+
+	// Вставляем новую строку с данными QR-кода и именем пользователя
+	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES($1, $2, $3, $4, $5)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(date, pairNumber, teacherName, repeat, username)
+	if err != nil {
+		log.Println("Ошибка при вставке данных в базу данных:", err)
+		return err
+	}
+
+	sendMessage(bot, update.Message.Chat.ID, "Запись прошла успешно")
 
 	return nil
 }
