@@ -55,8 +55,9 @@ type StudentState struct {
 }
 
 type GenerateState struct {
-	para string
-	step int
+	para   string
+	step   int
+	repeat int
 }
 
 type ScanState struct {
@@ -369,9 +370,11 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 }
 
 func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.BotAPI, timerControl chan bool) error {
+	t := time.Now().UTC()
+	date := t.Format("2006 01 02")
+	username := update.Message.From.UserName
 	generateState, ok := generateStates[update.Message.Chat.ID]
 	if !ok {
-		// Если состояние пользователя не найдено, создаем новое состояние
 		generateState = &GenerateState{}
 		generateStates[update.Message.Chat.ID] = generateState
 	}
@@ -386,22 +389,14 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 		}
 		generateState.para = update.Message.Text
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-		qrCodeData, err := generateQRCode(generateState.para)
-		if err != nil {
-			log.Println("Ошибка при генерации QR-кода:", err)
-			return err
-		}
-		err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-		if err != nil {
-			log.Println("Ошибка при отправке QR-кода в чат:", err)
-			return err
-		}
 		go func() {
 			ticker := time.NewTicker(1 * time.Minute)
 			for {
 				select {
 				case <-ticker.C:
-					qrCodeData, err := generateQRCode("Присутствующий")
+					gqs.repeat++
+					allVars := fmt.Sprintf("Para: %s, Date: %s, Username: %s, Step: %d", gqs.para, date, username, gqs.repeat)
+					qrCodeData, err := generateQRCode(allVars)
 					if err != nil {
 						log.Println("Ошибка при генерации QR-кода:", err)
 						return
@@ -463,6 +458,8 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 }
 
 func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	t := time.Now().UTC()
+	t.Format("2006 01 02")
 	scanState, ok := scanStates[update.Message.Chat.ID]
 	if !ok {
 		//Если состояние пользователя не найдено, создаем новое состояние
@@ -470,8 +467,6 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 		scanStates[update.Message.Chat.ID] = scanState
 	}
 	if os.Getenv("DB_SWITCH") == "on" {
-		t := time.Now().UTC()
-		t.Format("2006 01 02")
 		switch scanState.step {
 		case 0:
 			sendMessage(bot, update.Message.Chat.ID, "Сделайте фото QR-Code и отправьте в чат.")
