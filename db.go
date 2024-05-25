@@ -92,15 +92,16 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 		return err
 	}
 	defer db.Close()
+
 	// Подготавливаем запрос на вставку данных
-	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) VALUES($1, $2, $3, $4)")
+	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES($1, $2, $3, $4, $5)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	//Выполняем запрос, передавая данные
-	_, err = stmt.Exec(date, para, username, repeat)
+	// Выполняем запрос, передавая данные
+	_, err = stmt.Exec(date, para, username, repeat, "")
 	if err != nil {
 		return err
 	}
@@ -108,7 +109,6 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 	return nil
 }
 
-// Создаем таблицы: users, magazine, group в БД при подключении к ней
 func createTable() error {
 
 	//Подключаемся к БД
