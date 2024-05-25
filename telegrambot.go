@@ -376,7 +376,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 
 func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.BotAPI, timerControl chan bool) error {
 	t := time.Now().UTC()
-	date := t.Format("2006 01 02")
+	date := t.Format("01 02 2006")
 	username := update.Message.From.UserName
 	generateState, ok := generateStates[update.Message.Chat.ID]
 	if !ok {
