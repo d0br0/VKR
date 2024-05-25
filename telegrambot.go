@@ -207,6 +207,11 @@ func sendMenu(bot *tgbotapi.BotAPI, chatID int64, message string, options []stri
 	}
 }
 
+func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
+	msg := tgbotapi.NewMessage(chatID, text)
+	bot.Send(msg)
+}
+
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние группы из карты по ID чата
@@ -407,6 +412,12 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 						log.Println("Ошибка при отправке QR-кода в чат:", err)
 						return
 					}
+					// Запись в базу данных
+					err = recordToDatabase(username, date, gqs.para, gqs.repeat)
+					if err != nil {
+						log.Println("Ошибка при записи в базу данных:", err)
+						return
+					}
 				case <-timerControl:
 					ticker.Stop()
 					return
@@ -425,14 +436,15 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			log.Println("Ошибка при отправке QR-кода в чат:", err)
 			return err
 		}
+		// Запись в базу данных
+		err = recordToDatabase(username, date, gqs.para, gqs.repeat)
+		if err != nil {
+			log.Println("Ошибка при записи в базу данных:", err)
+			return err
+		}
 		delete(generateStates, update.Message.Chat.ID)
 	}
 	return nil
-}
-
-func sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
-	msg := tgbotapi.NewMessage(chatID, text)
-	bot.Send(msg)
 }
 
 func generateQRCode(text string) ([]byte, error) {
@@ -522,6 +534,7 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
 				bot.Send(msg)
+
 				delete(scanStates, update.Message.Chat.ID)
 				//scanState.step++
 			} else {

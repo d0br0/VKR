@@ -85,6 +85,30 @@ func getUserRole(username string) (string, error) {
 	return role, nil
 }
 
+func recordToDatabase(username string, date string, para string, repeat int) error {
+	// Подключаемся к БД
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// Подготавливаем запрос на вставку данных
+	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) VALUES($1, $2, $3, $4)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	// Выполняем запрос, передавая данные
+	_, err = stmt.Exec(date, para, username, repeat)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Создаем таблицы: users, magazine, group в БД при подключении к ней
 func createTable() error {
 
@@ -100,7 +124,7 @@ func createTable() error {
 		return err
 	}
 	//Создаём таблицу magazine
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATE, PAIR_NUMBER INT, STUDENT_NAME TEXT, TEACER_NAME TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE DATE, PAIR_NUMBER INT, TEACER_NAME TEXT, REPEAT INT STUDENT_NAME TEXT,);`); err != nil {
 		return err
 	}
 	//Создаём таблицу group
