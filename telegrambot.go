@@ -383,69 +383,70 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 		generateState = &GenerateState{}
 		generateStates[update.Message.Chat.ID] = generateState
 	}
-	//if os.Getenv("DB_SWITCH") == "on" {
-	switch generateState.step {
-	case 0:
-		sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
-		generateState.step++
-	case 1:
-		if update.Message.Text == "" {
-			sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
-			return nil
-		}
-		generateState.para = update.Message.Text
-
-		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
-		go func() {
-			ticker := time.NewTicker(30 * time.Second)
-			for {
-				select {
-				case <-ticker.C:
-					gqs.repeat++
-					var allVars = fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
-					qrCodeData, err := generateQRCode(allVars)
-					if err != nil {
-						log.Println("Ошибка при генерации QR-кода:", err)
-						return
-					}
-					err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-					if err != nil {
-						log.Println("Ошибка при отправке QR-кода в чат:", err)
-						return
-					}
-					// Запись в базу данных
-
-					if err = recordToDatabase(username, date, gqs.para, gqs.repeat); err != nil {
-						log.Println("Ошибка при записи в базу данных:", err)
-						return
-					}
-				case <-timerControl:
-					ticker.Stop()
-					return
-				}
+	if os.Getenv("DB_SWITCH") == "on" {
+		switch generateState.step {
+		case 0:
+			sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
+			generateState.step++
+		case 1:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
+				return nil
 			}
-		}()
-		//gqs.repeat++
-		//allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
-		//qrCodeData, err := generateQRCode(allVars)
-		//if err != nil {
-		//	log.Println("Ошибка при генерации QR-кода:", err)
-		//	return err
-		//}
-		//err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-		//if err != nil {
-		//	log.Println("Ошибка при отправке QR-кода в чат:", err)
-		//	return err
-		//}
-		// Запись в базу данных
-		//err = recordToDatabase(username, date, gqs.para, gqs.repeat)
-		//if err != nil {
-		//	log.Println("Ошибка при записи в базу данных:", err)
-		//	return err
-		//}
-		delete(generateStates, update.Message.Chat.ID)
+			generateState.para = update.Message.Text
+
+			allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+			qrCodeData, err := generateQRCode(allVars)
+			if err != nil {
+				log.Println("Ошибка при генерации QR-кода:", err)
+				return err
+			}
+			err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+			if err != nil {
+				log.Println("Ошибка при отправке QR-кода в чат:", err)
+				return err
+			}
+			//Запись в базу данных
+			err = recordToDatabase(username, date, gqs.para, gqs.repeat)
+			if err != nil {
+				log.Println("Ошибка при записи в базу данных:", err)
+				return err
+			}
+
+			sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
+			go func() {
+				ticker := time.NewTicker(30 * time.Second)
+				for {
+					select {
+					case <-ticker.C:
+						gqs.repeat++
+						var allVars = fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+						qrCodeData, err := generateQRCode(allVars)
+						if err != nil {
+							log.Println("Ошибка при генерации QR-кода:", err)
+							return
+						}
+						err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+						if err != nil {
+							log.Println("Ошибка при отправке QR-кода в чат:", err)
+							return
+						}
+						// Запись в базу данных
+
+						if err = recordToDatabase(username, date, gqs.para, gqs.repeat); err != nil {
+							log.Println("Ошибка при записи в базу данных:", err)
+							return
+						}
+					case <-timerControl:
+						ticker.Stop()
+						return
+					}
+				}
+			}()
+
+			delete(generateStates, update.Message.Chat.ID)
+		}
 	}
-	//}
 	return nil
 }
 
