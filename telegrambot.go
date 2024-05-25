@@ -397,7 +397,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 		go func() {
-			ticker := time.NewTicker(1 * time.Minute)
+			ticker := time.NewTicker(30 * time.Second)
 			for {
 				select {
 				case <-ticker.C:
@@ -425,24 +425,24 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				}
 			}
 		}()
-		gqs.repeat++
-		allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
-		qrCodeData, err := generateQRCode(allVars)
-		if err != nil {
-			log.Println("Ошибка при генерации QR-кода:", err)
-			return err
-		}
-		err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
-		if err != nil {
-			log.Println("Ошибка при отправке QR-кода в чат:", err)
-			return err
-		}
+		//gqs.repeat++
+		//allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+		//qrCodeData, err := generateQRCode(allVars)
+		//if err != nil {
+		//	log.Println("Ошибка при генерации QR-кода:", err)
+		//	return err
+		//}
+		//err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+		//if err != nil {
+		//	log.Println("Ошибка при отправке QR-кода в чат:", err)
+		//	return err
+		//}
 		// Запись в базу данных
-		err = recordToDatabase(username, date, gqs.para, gqs.repeat)
-		if err != nil {
-			log.Println("Ошибка при записи в базу данных:", err)
-			return err
-		}
+		//err = recordToDatabase(username, date, gqs.para, gqs.repeat)
+		//if err != nil {
+		//	log.Println("Ошибка при записи в базу данных:", err)
+		//	return err
+		//}
 		delete(generateStates, update.Message.Chat.ID)
 	}
 	//}
