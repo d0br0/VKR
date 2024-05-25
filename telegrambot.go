@@ -373,7 +373,6 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 	t := time.Now().UTC()
 	date := t.Format("2006 01 02")
 	username := update.Message.From.UserName
-	var allVars = fmt.Sprintf("Para: %s, Date: %s, Username: %s, Step: %d", gqs.para, date, username, gqs.repeat)
 	generateState, ok := generateStates[update.Message.Chat.ID]
 	if !ok {
 		generateState = &GenerateState{}
@@ -389,6 +388,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			return nil
 		}
 		generateState.para = update.Message.Text
+		var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, gqs.repeat)
 		sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 		qrCodeData, err := generateQRCode(allVars)
 		if err != nil {
