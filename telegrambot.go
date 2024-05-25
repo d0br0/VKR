@@ -373,6 +373,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 	t := time.Now().UTC()
 	date := t.Format("2006 01 02")
 	username := update.Message.From.UserName
+	var allVars = fmt.Sprintf("Para: %s, Date: %s, Username: %s, Step: %d", gqs.para, date, username, gqs.repeat)
 	generateState, ok := generateStates[update.Message.Chat.ID]
 	if !ok {
 		generateState = &GenerateState{}
@@ -395,7 +396,6 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				select {
 				case <-ticker.C:
 					gqs.repeat++
-					allVars := fmt.Sprintf("Para: %s, Date: %s, Username: %s, Step: %d", gqs.para, date, username, gqs.repeat)
 					qrCodeData, err := generateQRCode(allVars)
 					if err != nil {
 						log.Println("Ошибка при генерации QR-кода:", err)
