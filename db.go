@@ -93,17 +93,37 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 	}
 	defer db.Close()
 
-	// Подготавливаем запрос на вставку данных
-	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES($1, $2, $3, $4, $5)")
+	// Подготавливаем запрос на обновление данных
+	updateStmt, err := db.Prepare("UPDATE magazine SET REPEAT = $1 WHERE DATE = $2 AND PAIR_NUMBER = $3 AND TEACHER_NAME = $4 AND STUDENT_NAME = $5")
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer updateStmt.Close()
 
-	// Выполняем запрос, передавая данные
-	_, err = stmt.Exec(date, para, username, repeat, "")
+	// Выполняем запрос на обновление
+	result, err := updateStmt.Exec(repeat, date, para, username, "")
 	if err != nil {
 		return err
+	}
+
+	// Проверяем, была ли обновлена какая-либо строка
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	// Если ни одна строка не была обновлена, вставляем новую
+	if rowsAffected == 0 {
+		insertStmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES($1, $2, $3, $4, $5)")
+		if err != nil {
+			return err
+		}
+		defer insertStmt.Close()
+
+		_, err = insertStmt.Exec(date, para, username, repeat, "")
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
