@@ -536,7 +536,7 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 					return err
 				}
 
-				err = compareWithDatabase(result.String(), username, bot, update)
+				err = compareWithDatabase(result.String(), username, update, bot)
 				if err != nil {
 					log.Println("Ошибка при сравнении данных:", err)
 					return err
