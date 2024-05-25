@@ -405,9 +405,8 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			for {
 				select {
 				case <-ticker.C:
-					repeat := 0
-					repeat++
-					var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, repeat)
+					gqs.repeat++
+					var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, gqs.repeat)
 					qrCodeData, err := generateQRCode(allVars)
 					if err != nil {
 						log.Println("Ошибка при генерации QR-кода:", err)
@@ -424,6 +423,18 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				}
 			}
 		}()
+		gqs.repeat++
+		allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+		qrCodeData, err := generateQRCode(allVars)
+		if err != nil {
+			log.Println("Ошибка при генерации QR-кода:", err)
+			return err
+		}
+		err = sendQRToTelegramChat(bot, update.Message.Chat.ID, qrCodeData)
+		if err != nil {
+			log.Println("Ошибка при отправке QR-кода в чат:", err)
+			return err
+		}
 		delete(generateStates, update.Message.Chat.ID)
 	}
 	return nil
