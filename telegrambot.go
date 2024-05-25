@@ -471,8 +471,6 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 }
 
 func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	t := time.Now().UTC()
-	t.Format("2006 01 02")
 	scanState, ok := scanStates[update.Message.Chat.ID]
 	if !ok {
 		//Если состояние пользователя не найдено, создаем новое состояние
