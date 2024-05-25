@@ -405,8 +405,9 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			for {
 				select {
 				case <-ticker.C:
-					gqs.repeat++
-					var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, gqs.repeat)
+					repeat := 0
+					repeat++
+					var allVars = fmt.Sprintf("%s, %s, %s, %d", gqs.para, date, username, repeat)
 					qrCodeData, err := generateQRCode(allVars)
 					if err != nil {
 						log.Println("Ошибка при генерации QR-кода:", err)
