@@ -276,7 +276,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 			}
 
 			go func() {
-				ticker := time.NewTicker(30 * time.Second)
+				ticker := time.NewTicker(1 * time.Minute)
 				for {
 					select {
 					case <-ticker.C:
