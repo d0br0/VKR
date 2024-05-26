@@ -102,6 +102,8 @@ func telegramBot() {
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
+				case "Журнал":
+					ms.lookMagazine(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -118,6 +120,8 @@ func telegramBot() {
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
+				case "Журнал":
+					ms.lookMagazine(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
