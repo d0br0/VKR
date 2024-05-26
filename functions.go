@@ -23,11 +23,13 @@ var gs = &GroupState{}
 var ss = &StudentState{}
 var gqs = &GenerateState{}
 var sqs = &ScanState{}
+var ms = &MagazineState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
 var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
+var magazineStates = make(map[int64]*ScanState)
 
 type QrCodeResponse struct {
 	Data string `json:"data"`
@@ -61,6 +63,10 @@ type GenerateState struct {
 }
 
 type ScanState struct {
+	step int
+}
+
+type MagazineState struct {
 	step int
 }
 
@@ -404,6 +410,20 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 				sendMessage(bot, update.Message.Chat.ID, "Пожалуйста, отправьте фото QR-кода.")
 			}
 		}
+	}
+	return nil
+}
+
+func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	username := update.Message.From.UserName
+	magazineState, ok := magazineStates[update.Message.Chat.ID]
+	if !ok {
+		//Если состояние пользователя не найдено, создаем новое состояние
+		magazineState = &MagazineState{}
+		magazineStates[update.Message.Chat.ID] = magazineState
+	}
+	if os.Getenv("DB_SWITCH") == "on" {
+
 	}
 	return nil
 }
