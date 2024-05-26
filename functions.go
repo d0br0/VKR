@@ -444,9 +444,21 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 			}
 			magazineState.pair = update.Message.Text
 
-			if err = getStudents(username, ms.date, ms.pair); err != nil {
-				log.Println("Ошибка при записи в базу данных:", err)
-				return
+			// Получаем студентов из базы данных
+			students, err := getStudents(username, magazineState.date, magazineState.pair)
+			if err != nil {
+				log.Println("Ошибка при получении студентов из базы данных:", err)
+				return err
+			}
+
+			// Если студентов нет, отправляем сообщение об этом
+			if len(students) == 0 {
+				sendMessage(bot, update.Message.Chat.ID, "Студентов нет. Пожалуйста, сфотографируйте заново qr code и пришлите сюда.")
+			} else {
+				// Иначе, выводим имена студентов
+				for _, student := range students {
+					sendMessage(bot, update.Message.Chat.ID, student)
+				}
 			}
 		}
 	}
