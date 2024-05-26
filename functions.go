@@ -29,7 +29,7 @@ var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
 var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
-var magazineStates = make(map[int64]*ScanState)
+var magazineStates = make(map[int64]*MagazineState)
 
 type QrCodeResponse struct {
 	Data string `json:"data"`
@@ -67,6 +67,8 @@ type ScanState struct {
 }
 
 type MagazineState struct {
+	date string
+	pair string
 	step int
 }
 
@@ -423,7 +425,30 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 		magazineStates[update.Message.Chat.ID] = magazineState
 	}
 	if os.Getenv("DB_SWITCH") == "on" {
+		switch magazineState.step {
+		case 0:
+			sendMessage(bot, update.Message.Chat.ID, "Введите дату в формате ДД.ММ.ГГГГ")
+			magazineState.step++
+		case 1:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Дата не модет быть пустой. Пожалуйста, введите дату:")
+				return nil
+			}
+			magazineState.date = update.Message.Text
+			sendMenu(bot, update.Message.Chat.ID, "Выберите номер пары", []string{"1", "2", "3", "4", "5", "6", "7"})
+			magazineState.step++
+		case 2:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
+				return nil
+			}
+			magazineState.pair = update.Message.Text
 
+			if err = getStudents(username, ms.date, ms.pair); err != nil {
+				log.Println("Ошибка при записи в базу данных:", err)
+				return
+			}
+		}
 	}
 	return nil
 }
