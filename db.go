@@ -175,6 +175,39 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 	return nil
 }
 
+func getStudents(teacherName string, date string, pairNumber string) ([]string, error) {
+	// Подключаемся к БД
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	// Подготавливаем запрос на извлечение данных
+	rows, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE TEACHER_NAME = $1 AND DATE = $2 AND PAIR_NUMBER = $3", teacherName, date, pairNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Извлекаем имена студентов
+	var studentNames []string
+	for rows.Next() {
+		var studentName string
+		if err := rows.Scan(&studentName); err != nil {
+			return nil, err
+		}
+		studentNames = append(studentNames, studentName)
+	}
+
+	// Проверяем наличие ошибок при извлечении данных
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return studentNames, nil
+}
+
 func createTable() error {
 
 	//Подключаемся к БД
