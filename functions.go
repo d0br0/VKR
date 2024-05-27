@@ -443,7 +443,6 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 				return nil
 			}
 			magazineState.pair = update.Message.Text
-			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 			// Получаем студентов из базы данных
 			studentNames, err := getStudents(username, magazineState.date, magazineState.pair)
 			if err != nil {
@@ -460,6 +459,7 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 					sendMessage(bot, update.Message.Chat.ID, student)
 				}
 			}
+			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 		}
 	}
 	return nil
