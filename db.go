@@ -139,7 +139,7 @@ func getStudents(teacherName string, date string, pairNumber string) ([]string, 
 	defer db.Close()
 
 	// Подготавливаем запрос на извлечение данных
-	rows, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE TEACHER_NAME = $1 AND DATE = $2 AND PAIR_NUMBER = $3", teacherName, date, pairNumber)
+	rows, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE TEACHER_NAME = $3 AND DATE = $1 AND PAIR_NUMBER = $2", teacherName, date, pairNumber)
 	if err != nil {
 		return nil, err
 	}
