@@ -130,51 +130,6 @@ func recordToDatabase(username string, date string, para string, repeat int) err
 	return nil
 }
 
-func compareWithDatabase(qrData string, username string, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-	// Подключаемся к БД
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	// Извлекаем данные из базы данных
-	row := db.QueryRow("SELECT * FROM magazine WHERE CONCAT(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT) = $1", qrData)
-	var date, pairNumber, teacherName, repeat string
-	err = row.Scan(&date, &pairNumber, &teacherName, &repeat)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Если данных нет в базе данных
-			log.Println("Данные QR-кода не найдены в базе данных")
-			sendMessage(bot, update.Message.Chat.ID, "Запись не произошла, сфотографируйте заново qr code и пришлите сюда")
-		} else {
-			// Если произошла другая ошибка
-			log.Println("Ошибка при извлечении данных из базы данных:", err)
-		}
-		return err
-	}
-
-	// Если данные найдены в базе данных
-	log.Println("Данные QR-кода найдены в базе данных")
-
-	// Вставляем новую строку с данными QR-кода и именем пользователя
-	stmt, err := db.Prepare("INSERT INTO magazine(DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES($1, $2, $3, $4, $5)")
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(date, pairNumber, teacherName, repeat, username)
-	if err != nil {
-		log.Println("Ошибка при вставке данных в базу данных:", err)
-		return err
-	}
-
-	sendMessage(bot, update.Message.Chat.ID, "Запись прошла успешно")
-
-	return nil
-}
-
 func getStudents(teacherName string, date string, pairNumber string) ([]string, error) {
 	// Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
@@ -206,6 +161,47 @@ func getStudents(teacherName string, date string, pairNumber string) ([]string, 
 	}
 
 	return studentNames, nil
+}
+
+func compareWithDatabase(qrData string, username string, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	//Подключаемся к БД
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	//Запрашиваем данные из таблицы magazine
+	rows, err := db.Query(`SELECT DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT FROM magazine;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	//Сравниваем данные из QR-кода с данными из таблицы
+	for rows.Next() {
+		var date, pairNumber, teacherName, repeat string
+		err = rows.Scan(&date, &pairNumber, &teacherName, &repeat)
+		if err != nil {
+			sendMessage(bot, update.Message.Chat.ID, "Запись не произошла, сфотографируйте заново qr code и пришлите сюда")
+			return err
+		}
+
+		//Если данные совпадают, записываем их в новую строку вместе с username
+		if qrData == fmt.Sprintf("%s %s %s %s", date, pairNumber, teacherName, repeat) {
+			_, err = db.Exec(`INSERT INTO magazine (DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES ($1, $2, $3, $4, $5);`, date, pairNumber, teacherName, repeat, username)
+			if err != nil {
+				return err
+			}
+
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Данные успешно записаны.")
+			bot.Send(msg)
+			break
+		}
+	}
+	sendMessage(bot, update.Message.Chat.ID, "Запись прошла успешно")
+
+	return nil
 }
 
 func createTable() error {
