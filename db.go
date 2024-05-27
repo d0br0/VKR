@@ -179,11 +179,11 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 	defer rows.Close()
 
 	//Сравниваем данные из QR-кода с данными из таблицы
+	var matchFound bool
 	for rows.Next() {
 		var date, pairNumber, teacherName, repeat string
 		err = rows.Scan(&date, &pairNumber, &teacherName, &repeat)
 		if err != nil {
-			sendMessage(bot, update.Message.Chat.ID, "Запись не произошла, сфотографируйте заново qr code и пришлите сюда")
 			return err
 		}
 
@@ -196,10 +196,15 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Данные успешно записаны.")
 			bot.Send(msg)
+			matchFound = true
 			break
 		}
 	}
-	sendMessage(bot, update.Message.Chat.ID, "Запись прошла успешно")
+
+	if !matchFound {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Данные не совпадают.")
+		bot.Send(msg)
+	}
 
 	return nil
 }
