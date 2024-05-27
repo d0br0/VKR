@@ -188,7 +188,7 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 		}
 
 		//Если данные совпадают, записываем их в новую строку вместе с username
-		if qrData == fmt.Sprintf("%s %s %s %s", date, pairNumber, teacherName, repeat) {
+		if qrData == fmt.Sprintf("%s, %s, %s, %s", date, pairNumber, teacherName, repeat) {
 			_, err = db.Exec(`INSERT INTO magazine (DATE, PAIR_NUMBER, TEACHER_NAME, REPEAT, STUDENT_NAME) VALUES ($1, $2, $3, $4, $5);`, date, pairNumber, teacherName, repeat, username)
 			if err != nil {
 				return err
