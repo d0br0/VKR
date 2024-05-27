@@ -152,7 +152,15 @@ func getStudents(teacherName string, date string, pairNumber string) ([]string, 
 		if err := rows.Scan(&studentName); err != nil {
 			return nil, err
 		}
-		studentNames = append(studentNames, studentName)
+
+		// Запрашиваем полное имя студента из таблицы users
+		row := db.QueryRow("SELECT FIO FROM users WHERE username = $1", studentName)
+		var fio string
+		if err := row.Scan(&fio); err != nil {
+			return nil, err
+		}
+
+		studentNames = append(studentNames, fio)
 	}
 
 	// Проверяем наличие ошибок при извлечении данных
