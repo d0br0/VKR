@@ -459,7 +459,7 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 					sendMessage(bot, update.Message.Chat.ID, student)
 				}
 			}
-			delete(scanStates, update.Message.Chat.ID)
+			delete(magazineStates, update.Message.Chat.ID)
 			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 		}
 	}
