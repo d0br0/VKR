@@ -453,7 +453,7 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 
 			// Если студентов нет, отправляем сообщение об этом
 			if len(students) == 0 {
-				sendMessage(bot, update.Message.Chat.ID, "Студентов нет. Пожалуйста, сфотографируйте заново qr code и пришлите сюда.")
+				sendMessage(bot, update.Message.Chat.ID, "Студентов нет.")
 			} else {
 				// Иначе, выводим имена студентов
 				for _, student := range students {
