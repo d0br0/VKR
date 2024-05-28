@@ -142,7 +142,7 @@ func getStudents(teacherName string, date string, pairNumber string) ([]string, 
 	// и выбирает поле FIO из таблицы users для каждого студента
 	rows, err := db.Query(`SELECT users.FIO 
 		FROM magazine 
-		JOIN users ON magazine.STUDENT_NAME = users.user 
+		JOIN users ON magazine.STUDENT_NAME = users.USER_NAME
 		WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3`, date, pairNumber, teacherName)
 	if err != nil {
 		return nil, err
