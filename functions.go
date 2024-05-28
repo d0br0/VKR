@@ -138,7 +138,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				return nil
 			}
 			userState.username = update.Message.Text
-			sendMessage(bot, update.Message.Chat.ID, "Введите название роли:")
+			sendMenu(bot, update.Message.Chat.ID, "Выбирете роль:", []string{"Студент", "Преподаватель", "Администратор"})
 			userState.step++
 		case 2:
 			if update.Message.Text == "" {
@@ -174,6 +174,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 				userState.role = ""
 				userState.fio = ""
 				delete(userStates, update.Message.Chat.ID)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 			}
 		}
 	}
