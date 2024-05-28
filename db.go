@@ -138,37 +138,36 @@ func getStudents(teacherName string, date string, pairNumber string) ([]string, 
 	}
 	defer db.Close()
 
-	// Подготавливаем запрос на извлечение данных
-	rows, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3", date, pairNumber, teacherName)
+	// Выполняем SQL запрос, который объединяет таблицы magazine и users по полю STUDENT_NAME
+	// и выбирает поле FIO из таблицы users для каждого студента
+	rows, err := db.Query(`SELECT users.FIO 
+		FROM magazine 
+		JOIN users ON magazine.STUDENT_NAME = users.user 
+		WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3`, date, pairNumber, teacherName)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	// Извлекаем имена студентов
-	var studentNames []string
+	var students []string
+	// Проходимся по всем строкам результата запроса
 	for rows.Next() {
-		var studentName string
-		if err := rows.Scan(&studentName); err != nil {
+		var student string
+		// Считываем значение поля FIO в переменную student
+		if err := rows.Scan(&student); err != nil {
 			return nil, err
 		}
-
-		// Запрашиваем полное имя студента из таблицы users
-		row := db.QueryRow("SELECT FIO FROM users WHERE USER_NAME = $1", studentName)
-		var fio string
-		if err := row.Scan(&fio); err != nil {
-			return nil, err
-		}
-
-		studentNames = append(studentNames, fio)
+		// Добавляем student в список students
+		students = append(students, student)
 	}
 
-	// Проверяем наличие ошибок при извлечении данных
+	// Проверяем, не было ли ошибок при чтении строк
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return studentNames, nil
+	// Возвращаем список students
+	return students, nil
 }
 
 func compareWithDatabase(qrData string, username string, update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
