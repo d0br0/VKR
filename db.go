@@ -42,7 +42,7 @@ func collectDataUsers(userName string, role string, fio string, groupName string
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(user_Name, role, fio, group_Name, name_Child) VALUES($1, $2, $3, $4, $5);`
+	data := `INSERT INTO users(user_Name, role, fio, group_Name, child_Name) VALUES($1, $2, $3, $4, $5);`
 
 	//Выполняем наш SQL запрос
 	if _, err = db.Exec(data, userName, role, fio, groupName, childName); err != nil {
@@ -236,7 +236,7 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USER_NAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT, NAME_CHILD);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USER_NAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT, CHILD_NAME TEXT);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
