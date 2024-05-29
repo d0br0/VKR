@@ -126,7 +126,7 @@ func telegramBot() {
 				case "Создание студента":
 					ss.makeStudent(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание студента", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
