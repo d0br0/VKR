@@ -110,15 +110,15 @@ func telegramBot() {
 			if role == "Администратор" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
 				case "Создание группы":
 					gs.makeGroup(update, bot)
 				case "Создание пользователя":
 					us.makeUser(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Журнал", "Вернуться в главное меню"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
@@ -132,13 +132,13 @@ func telegramBot() {
 			} else if role == "Преподаватель" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Журнал", "Создание студента", "Создание родителя"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Журнал", "Создание студента", "Создание родителя"})
 				case "Создание студента":
 					ss.makeStudent(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание студента", "Журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Журнал", "Создание студента", "Создание родителя"})
 					timerControl <- true
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
