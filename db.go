@@ -19,7 +19,7 @@ var sslmode = os.Getenv("SSLMODE")
 
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
-func collectDataUsers(userName string, role string, fio string, groupName string) error {
+func collectDataUsers(userName string, role string, fio string, groupName string, childName string) error {
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
@@ -42,10 +42,10 @@ func collectDataUsers(userName string, role string, fio string, groupName string
 	}
 
 	//Создаем SQL запрос
-	data := `INSERT INTO users(user_Name, role, fio, group_Name) VALUES($1, $2, $3, $4);`
+	data := `INSERT INTO users(user_Name, role, fio, group_Name, name_Child) VALUES($1, $2, $3, $4, $5);`
 
 	//Выполняем наш SQL запрос
-	if _, err = db.Exec(data, userName, role, fio, groupName); err != nil {
+	if _, err = db.Exec(data, userName, role, fio, groupName, childName); err != nil {
 		log.Printf("Error executing query: %v\n", err)
 		return err
 	}

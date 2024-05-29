@@ -173,7 +173,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			}
 			userState.groupName = update.Message.Text
 
-			if err := collectDataUsers(userState.username, userState.role, userState.fio, userState.groupName); err != nil {
+			if err := collectDataUsers(userState.username, userState.role, userState.fio, userState.groupName, "-"); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Извините, пользователь с таким именем уже есть.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
@@ -204,7 +204,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch studentState.step {
 		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг студента:")
 			studentState.step++
 		case 1:
 			if update.Message.Text == "" {
@@ -229,7 +229,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 			}
 			studentState.groupName = update.Message.Text
 
-			if err := collectDataUsers(studentState.username, "Студент", studentState.fio, studentState.groupName); err != nil {
+			if err := collectDataUsers(studentState.username, "Студент", studentState.fio, studentState.groupName, "-"); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
@@ -249,51 +249,47 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 func (ps *ParentState) makeParent(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние пользователя из карты по ID чата
-	studentState, ok := studentStates[update.Message.Chat.ID]
+	parentState, ok := parentStates[update.Message.Chat.ID]
 	if !ok {
 		// Если состояние пользователя не найдено, создаем новое состояние
-		studentState = &StudentState{}
-		studentStates[update.Message.Chat.ID] = studentState
+		parentState = &ParentState{}
+		parentStates[update.Message.Chat.ID] = parentState
 	}
 
 	if os.Getenv("DB_SWITCH") == "on" {
-		switch studentState.step {
+		switch parentState.step {
 		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
-			studentState.step++
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг родителя:")
+			parentState.step++
 		case 1:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
-			studentState.username = update.Message.Text
+			parentState.username = update.Message.Text
 			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
-			studentState.step++
+			parentState.step++
 		case 2:
 			if update.Message.Text == "" {
 				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
 				return nil
 			}
-			studentState.fio = update.Message.Text
-			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
-			studentState.step++
+			parentState.fio = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг студента:")
+			parentState.step++
 		case 3:
 			if update.Message.Text == "" {
-				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
+				sendMessage(bot, update.Message.Chat.ID, "Имя студента не может быть пустым. Пожалуйста, введите имя группы:")
 				return nil
 			}
-			studentState.groupName = update.Message.Text
+			parentState.childname = update.Message.Text
 
-			if err := collectDataUsers(studentState.username, "Студент", studentState.fio, studentState.groupName); err != nil {
+			if err := collectDataUsers(parentState.username, "Родитель", parentState.fio, "-", parentState.childname); err != nil {
 				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Пользователь успешно создан!")
-				studentState.step = 0
-				studentState.groupName = ""
-				studentState.username = ""
-				studentState.fio = ""
-				delete(studentStates, update.Message.Chat.ID)
+				delete(parentStates, update.Message.Chat.ID)
 				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 			}
 		}

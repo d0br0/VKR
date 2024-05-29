@@ -124,6 +124,8 @@ func telegramBot() {
 					gqs.markStudents(update, bot, timerControl)
 				case "Журнал":
 					ms.lookMagazine(update, bot)
+				case "Создание родителя":
+					ps.makeParent(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -142,6 +144,8 @@ func telegramBot() {
 					gqs.markStudents(update, bot, timerControl)
 				case "Журнал":
 					ms.lookMagazine(update, bot)
+				case "Создание родителя":
+					ps.makeParent(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
 				}
@@ -155,6 +159,11 @@ func telegramBot() {
 					sqs.handleQRCodeMessage(update, bot)
 				default:
 					sendMessage(bot, update.Message.Chat.ID, "Извините, на такую команду я не запрограмирован.")
+				}
+			} else if role == "Родитель" {
+				switch update.Message.Text {
+				case "/start":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
 				}
 			}
 		}
