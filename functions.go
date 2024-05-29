@@ -164,7 +164,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 			userState.groupName = update.Message.Text
 
 			if err := collectDataUsers(userState.username, userState.role, userState.fio, userState.groupName); err != nil {
-				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				sendMessage(bot, update.Message.Chat.ID, "Извините, пользователь с таким именем уже есть.")
 				return fmt.Errorf("collectDataGroup failed: %w", err)
 			} else {
 				sendMessage(bot, update.Message.Chat.ID, "Пользователь успешно создан!")

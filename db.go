@@ -19,15 +19,27 @@ var sslmode = os.Getenv("SSLMODE")
 
 var dbInfo = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, dbname, sslmode)
 
-// Собираем данные полученные ботом
 func collectDataUsers(userName string, role string, fio string, groupName string) error {
-
 	//Подключаемся к БД
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
+
+	//Проверяем, существует ли пользователь
+	userExists := `SELECT EXISTS(SELECT 1 FROM users WHERE user_Name=$1);`
+	var exists bool
+	err = db.QueryRow(userExists, userName).Scan(&exists)
+	if err != nil {
+		log.Printf("Error executing query: %v\n", err)
+		return err
+	}
+
+	if exists {
+		log.Printf("User %s already exists\n", userName)
+		return err
+	}
 
 	//Создаем SQL запрос
 	data := `INSERT INTO users(user_Name, role, fio, group_Name) VALUES($1, $2, $3, $4);`
@@ -61,11 +73,9 @@ func collectDataGroup(groupName string, classLeader string) error {
 }
 
 func getUserRole(username string) (string, error) {
-	log.Printf("Getting role for user: %s", username) // Логирование имени пользователя
-
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
-		log.Printf("Error opening database: %v", err) // Логирование ошибки при открытии базы данных
+		log.Printf("Error opening database: %v", err)
 		return "", err
 	}
 	defer db.Close()
@@ -74,14 +84,14 @@ func getUserRole(username string) (string, error) {
 	err = db.QueryRow("SELECT ROLE FROM users WHERE USER_NAME = $1", username).Scan(&role)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("User not found: %s", username) // Логирование, если пользователь не найден
+			log.Printf("User not found: %s", username)
 			return "", fmt.Errorf("user not found")
 		}
-		log.Printf("Error executing query: %v", err) // Логирование ошибки при выполнении запроса
+		log.Printf("Error executing query: %v", err)
 		return "", err
 	}
 
-	log.Printf("Found role for user %s: %s", username, role) // Логирование найденной роли
+	log.Printf("Found role for user %s: %s", username, role)
 
 	return role, nil
 }
