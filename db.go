@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -39,7 +38,7 @@ func collectDataUsers(userName string, role string, fio string, groupName string
 
 	if exists {
 		log.Printf("User %s already exists\n", userName)
-		return errors.New("Пользователь уже создан")
+		return nil
 	}
 
 	//Создаем SQL запрос
