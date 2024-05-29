@@ -111,6 +111,7 @@ func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) er
 				groupState.nameGroup = ""
 				groupState.classLeader = ""
 				delete(groupStates, update.Message.Chat.ID)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 			}
 		}
 	}
@@ -229,6 +230,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 				studentState.username = ""
 				studentState.fio = ""
 				delete(studentStates, update.Message.Chat.ID)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 			}
 		}
 	}
@@ -395,17 +397,16 @@ func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.
 				result, err := qrReader.Decode(bmp, nil)
 				if err != nil {
 					log.Println("Ошибка при чтении QR-кода:", err)
+					sendMessage(bot, update.Message.Chat.ID, "QR-код не распознан, отправьте фото QR-кода.")
 					return err
 				}
 
 				err = compareWithDatabase(result.String(), username, update, bot)
 				if err != nil {
+					sendMessage(bot, update.Message.Chat.ID, "QR-код не распознан, отправьте фото QR-кода.")
 					log.Println("Ошибка при сравнении данных:", err)
 					return err
 				}
-
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Результат сканирования: %s", result))
-				bot.Send(msg)
 
 				delete(scanStates, update.Message.Chat.ID)
 				//scanState.step++
