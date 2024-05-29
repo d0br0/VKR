@@ -24,12 +24,14 @@ var ss = &StudentState{}
 var gqs = &GenerateState{}
 var sqs = &ScanState{}
 var ms = &MagazineState{}
+var ps = &ParentState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
 var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
 var magazineStates = make(map[int64]*MagazineState)
+var parentStates = make(map[int64]*ParentState)
 
 type QrCodeResponse struct {
 	Data string `json:"data"`
@@ -70,6 +72,13 @@ type MagazineState struct {
 	date string
 	pair string
 	step int
+}
+
+type ParentState struct {
+	username  string
+	fio       string
+	childname string
+	step      int
 }
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
@@ -183,6 +192,61 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 }
 
 func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+
+	// Получаем состояние пользователя из карты по ID чата
+	studentState, ok := studentStates[update.Message.Chat.ID]
+	if !ok {
+		// Если состояние пользователя не найдено, создаем новое состояние
+		studentState = &StudentState{}
+		studentStates[update.Message.Chat.ID] = studentState
+	}
+
+	if os.Getenv("DB_SWITCH") == "on" {
+		switch studentState.step {
+		case 0:
+			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+			studentState.step++
+		case 1:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Название тэга не может быть пустым. Пожалуйста, введите название тэга:")
+				return nil
+			}
+			studentState.username = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите ФИО:")
+			studentState.step++
+		case 2:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "ФИО не может быть пустым. Пожалуйста, введите ФИО:")
+				return nil
+			}
+			studentState.fio = update.Message.Text
+			sendMessage(bot, update.Message.Chat.ID, "Введите имя группы:")
+			studentState.step++
+		case 3:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Имя группы не может быть пустым. Пожалуйста, введите имя группы:")
+				return nil
+			}
+			studentState.groupName = update.Message.Text
+
+			if err := collectDataUsers(studentState.username, "Студент", studentState.fio, studentState.groupName); err != nil {
+				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
+				return fmt.Errorf("collectDataGroup failed: %w", err)
+			} else {
+				sendMessage(bot, update.Message.Chat.ID, "Пользователь успешно создан!")
+				studentState.step = 0
+				studentState.groupName = ""
+				studentState.username = ""
+				studentState.fio = ""
+				delete(studentStates, update.Message.Chat.ID)
+				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
+			}
+		}
+	}
+	return nil
+}
+
+func (ps *ParentState) makeParent(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние пользователя из карты по ID чата
 	studentState, ok := studentStates[update.Message.Chat.ID]
