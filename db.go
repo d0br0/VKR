@@ -236,7 +236,7 @@ func createTable() error {
 	defer db.Close()
 
 	//Создаём таблицу users
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USER_NAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT);`); err != nil {
+	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (ID SERIAL PRIMARY KEY, USER_NAME TEXT, ROLE TEXT, FIO TEXT, GROUP_NAME TEXT, NAME_CHILD);`); err != nil {
 		return err
 	}
 	//Создаём таблицу magazine
