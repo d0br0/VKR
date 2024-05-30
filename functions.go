@@ -368,6 +368,17 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				}
 			}()
 
+			absentStudentsUsernames, err := lookStudent(username, date, gqs.para)
+			if err != nil {
+				log.Println("Ошибка при записи в базу данных:", err)
+				return err
+			}
+
+			for _, absentStudentUsername := range absentStudentsUsernames {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Отсутствует студент: "+absentStudentUsername)
+				bot.Send(msg)
+			}
+
 			delete(generateStates, update.Message.Chat.ID)
 		}
 	}

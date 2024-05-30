@@ -226,6 +226,55 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 	return nil
 }
 
+func lookStudent(teacherName string, date string, pairNumber string) ([]string, error) {
+	var studentName string
+	var absentStudentsUsernames []string
+
+	// Запрос в таблицу magazine
+	err := db.QueryRow("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3", date, pairNumber, teacherName).Scan(&studentName)
+	if err != nil {
+		return nil, err
+	}
+
+	if studentName != "" {
+		var groupName string
+
+		// Запрос в таблицу users
+		err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE username = $1", studentName).Scan(&groupName)
+		if err != nil {
+			return nil, err
+		}
+
+		rows, err := db.Query("SELECT username FROM structure WHERE GROUP_NAME = $1", groupName)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var username string
+			if err := rows.Scan(&username); err != nil {
+				return nil, err
+			}
+
+			if username != studentName {
+				var userName string
+				err = db.QueryRow("SELECT user_name FROM users WHERE CHILD_NAME = $1", username).Scan(&userName)
+				if err != nil {
+					return nil, err
+				}
+				absentStudentsUsernames = append(absentStudentsUsernames, userName)
+			}
+		}
+
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return absentStudentsUsernames, nil
+}
+
 func createTable() error {
 
 	//Подключаемся к БД
