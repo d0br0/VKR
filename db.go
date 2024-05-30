@@ -230,8 +230,14 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	var studentName string
 	var absentStudentsUsernames []string
 
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
 	// Запрос в таблицу magazine
-	err := db.QueryRow("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3", date, pairNumber, teacherName).Scan(&studentName)
+	err = db.QueryRow("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3", date, pairNumber, teacherName).Scan(&studentName)
 	if err != nil {
 		return nil, err
 	}
