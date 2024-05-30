@@ -251,7 +251,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 		return nil, err
 	}
 
-	rows, err := db.Query("SELECT username FROM structure WHERE GROUP_NAME = $1", groupName)
+	rows, err := db.Query("SELECT username FROM users WHERE GROUP_NAME = $4", groupName)
 	if err != nil {
 		return nil, err
 	}
