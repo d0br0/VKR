@@ -546,7 +546,7 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 	return nil
 }
 
-func (ms *MagazineState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+func (cs *ChildrenState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	username := update.Message.From.UserName
 	childrenState, ok := childrenStates[update.Message.Chat.ID]
 	if !ok {
