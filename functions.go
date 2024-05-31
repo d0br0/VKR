@@ -575,8 +575,8 @@ func (cs *ChildrenState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotA
 			if len(pairs) == 0 {
 				sendMessage(bot, update.Message.Chat.ID, "Студентов нет.")
 			} else {
+				sendMessage(bot, update.Message.Chat.ID, "Студент в этот день присутствовал на этих парах:")
 				for _, pair := range pairs {
-					sendMessage(bot, update.Message.Chat.ID, "Студент в этот день присутствовал на этих парах:")
 					sendMessage(bot, update.Message.Chat.ID, pair)
 				}
 			}
