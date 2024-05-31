@@ -307,21 +307,25 @@ func contains(slice []string, item string) bool {
 }
 
 func getPairs(username string, data string) ([]string, error) {
+	log.Println("getPairs called with username:", username, "and date:", data)
 	var childName string
 	var pairs []string
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
+		log.Println("Error opening database:", err)
 		return nil, err
 	}
 	defer db.Close()
 
 	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE user = $1", username).Scan(&childName)
 	if err != nil {
+		log.Println("Error querying users table:", err)
 		return nil, err
 	}
 
-	rows, err := db.Query("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $5", data, childName)
+	rows, err := db.Query("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $2", data, childName)
 	if err != nil {
+		log.Println("Error querying magazine table:", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -329,15 +333,18 @@ func getPairs(username string, data string) ([]string, error) {
 	for rows.Next() {
 		var pair string
 		if err := rows.Scan(&pair); err != nil {
+			log.Println("Error scanning row:", err)
 			return nil, err
 		}
 		pairs = append(pairs, pair)
 	}
 
 	if err := rows.Err(); err != nil {
+		log.Println("Error with rows:", err)
 		return nil, err
 	}
 
+	log.Println("getPairs returning pairs:", pairs)
 	return pairs, nil
 }
 

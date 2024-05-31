@@ -547,10 +547,11 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 }
 
 func (cs *ChildrenState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	log.Println("lookChildren called with update:", update)
 	username := update.Message.From.UserName
 	childrenState, ok := childrenStates[update.Message.Chat.ID]
 	if !ok {
-		//Если состояние пользователя не найдено, создаем новое состояние
+		log.Println("No state found for user, creating new state.")
 		childrenState = &ChildrenState{}
 		childrenStates[update.Message.Chat.ID] = childrenState
 	}
@@ -584,5 +585,6 @@ func (cs *ChildrenState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotA
 			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 		}
 	}
+	log.Println("lookChildren completed successfully.")
 	return nil
 }
