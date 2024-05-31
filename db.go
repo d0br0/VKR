@@ -306,6 +306,28 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+func getPairs(username string, data string) ([]string, error) {
+	var childName string
+	var pairs []string
+	db, err := sql.Open("postgres", dbInfo)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE USER_NAME = $1", username).Scan(&childName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.QueryRow("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $5", data, childName).Scan(&pairs)
+	if err != nil {
+		return nil, err
+	}
+
+	return pairs, nil
+}
+
 func createTable() error {
 
 	//Подключаемся к БД

@@ -25,6 +25,7 @@ var gqs = &GenerateState{}
 var sqs = &ScanState{}
 var ms = &MagazineState{}
 var ps = &ParentState{}
+var cs = &ChildrenState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
@@ -32,6 +33,7 @@ var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
 var magazineStates = make(map[int64]*MagazineState)
 var parentStates = make(map[int64]*ParentState)
+var childrenStates = make(map[int64]*ChildrenState)
 
 type QrCodeResponse struct {
 	Data string `json:"data"`
@@ -79,6 +81,11 @@ type ParentState struct {
 	fio       string
 	childname string
 	step      int
+}
+
+type ChildrenState struct {
+	date string
+	step int
 }
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
@@ -533,6 +540,47 @@ func (ms *MagazineState) lookMagazine(update tgbotapi.Update, bot *tgbotapi.BotA
 				}
 			}
 			delete(magazineStates, update.Message.Chat.ID)
+			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
+		}
+	}
+	return nil
+}
+
+func (ms *MagazineState) lookChildren(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	username := update.Message.From.UserName
+	childrenState, ok := childrenStates[update.Message.Chat.ID]
+	if !ok {
+		//Если состояние пользователя не найдено, создаем новое состояние
+		childrenState = &ChildrenState{}
+		childrenStates[update.Message.Chat.ID] = childrenState
+	}
+	if os.Getenv("DB_SWITCH") == "on" {
+		switch childrenState.step {
+		case 0:
+			sendMessage(bot, update.Message.Chat.ID, "Введите дату в формате ДД.ММ.ГГГГ")
+			childrenState.step++
+		case 1:
+			if update.Message.Text == "" {
+				sendMessage(bot, update.Message.Chat.ID, "Дата не модет быть пустой. Пожалуйста, введите дату:")
+				return nil
+			}
+			childrenState.date = update.Message.Text
+
+			pairs, err := getPairs(username, childrenState.date)
+			if err != nil {
+				log.Println("Ошибка при получении посещаемости из базы данных:", err)
+				return err
+			}
+
+			if len(pairs) == 0 {
+				sendMessage(bot, update.Message.Chat.ID, "Студентов нет.")
+			} else {
+				for _, pair := range pairs {
+					sendMessage(bot, update.Message.Chat.ID, "Студент в этот день присутствовал на этих парах:")
+					sendMessage(bot, update.Message.Chat.ID, pair)
+				}
+			}
+			delete(childrenStates, update.Message.Chat.ID)
 			sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
 		}
 	}
