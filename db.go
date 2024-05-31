@@ -231,7 +231,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	var absentStudentsUsernames []string
 	var groupName string
 	var username string
-	var userName string
+	var parentName string
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
@@ -251,22 +251,42 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 		return nil, err
 	}
 
-	rows, err := db.Query("SELECT username FROM users WHERE GROUP_NAME = $4", groupName)
+	rows, err := db.Query("SELECT username FROM users WHERE GROUP_NAME = $1", groupName)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	var usernames []string
 	for rows.Next() {
 		if err := rows.Scan(&username); err != nil {
 			return nil, err
 		}
-		if username != studentName {
-			err = db.QueryRow("SELECT user_name FROM users WHERE CHILD_NAME = $1", username).Scan(&userName)
+		usernames = append(usernames, username)
+	}
+
+	rowsMagazine, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND TEACHER_NAME = $2", date, teacherName)
+	if err != nil {
+		return nil, err
+	}
+	defer rowsMagazine.Close()
+
+	var studentsMagazine []string
+	for rowsMagazine.Next() {
+		var studentMagazine string
+		if err := rowsMagazine.Scan(&studentMagazine); err != nil {
+			return nil, err
+		}
+		studentsMagazine = append(studentsMagazine, studentMagazine)
+	}
+
+	for _, username := range usernames {
+		if !contains(studentsMagazine, username) {
+			err = db.QueryRow("SELECT PARENT_NAME FROM users WHERE CHILD_NAME = $1", username).Scan(&parentName)
 			if err != nil {
 				return nil, err
 			}
-			absentStudentsUsernames = append(absentStudentsUsernames, userName)
+			absentStudentsUsernames = append(absentStudentsUsernames, parentName)
 		}
 	}
 
@@ -275,6 +295,15 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	}
 
 	return absentStudentsUsernames, nil
+}
+
+func contains(slice []string, item string) bool {
+	for _, a := range slice {
+		if a == item {
+			return true
+		}
+	}
+	return false
 }
 
 func createTable() error {
