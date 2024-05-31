@@ -315,13 +315,26 @@ func getPairs(username string, data string) ([]string, error) {
 	}
 	defer db.Close()
 
-	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE USER_NAME = $1", username).Scan(&childName)
+	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE user = $1", username).Scan(&childName)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.QueryRow("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $5", data, childName).Scan(&pairs)
+	rows, err := db.Query("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $5", data, childName)
 	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var pair string
+		if err := rows.Scan(&pair); err != nil {
+			return nil, err
+		}
+		pairs = append(pairs, pair)
+	}
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
