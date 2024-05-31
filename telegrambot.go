@@ -164,6 +164,8 @@ func telegramBot() {
 				switch update.Message.Text {
 				case "/start":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
+				case "Посмотреть посещаемость ребёнка":
+					cs.lookChildren(update, bot)
 				}
 			}
 		}
