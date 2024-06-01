@@ -323,7 +323,7 @@ func getPairs(username string, data string) ([]string, error) {
 		return nil, err
 	}
 
-	rows, err := db.Query("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $2", data, childName)
+	rows, err := db.Query("SELECT PAIR_NUMBER FROM magazine WHERE DATE = $1 AND STUDENT_NAME = $5", data, childName)
 	if err != nil {
 		log.Println("Error querying magazine table:", err)
 		return nil, err
