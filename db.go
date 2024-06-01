@@ -227,6 +227,7 @@ func compareWithDatabase(qrData string, username string, update tgbotapi.Update,
 }
 
 func lookStudent(teacherName string, date string, pairNumber string) ([]string, error) {
+	log.Println("lookStudent called with teacherName:", teacherName, "date:", date, "and pairNumber:", pairNumber)
 	var studentName string
 	var absentStudentsUsernames []string
 	var groupName string
@@ -235,24 +236,26 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
+		log.Println("Error opening database:", err)
 		return nil, err
 	}
 	defer db.Close()
 
-	// Запрос в таблицу magazine
 	err = db.QueryRow("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3 AND STUDENT_NAME <> ''", date, pairNumber, teacherName).Scan(&studentName)
 	if err != nil {
+		log.Println("Error querying magazine table:", err)
 		return nil, err
 	}
 
-	// Запрос в таблицу users
-	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE USER_NAME = $1", studentName).Scan(&groupName)
+	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE user = $1", studentName).Scan(&groupName)
 	if err != nil {
+		log.Println("Error querying users table:", err)
 		return nil, err
 	}
 
 	rows, err := db.Query("SELECT username FROM users WHERE GROUP_NAME = $1", groupName)
 	if err != nil {
+		log.Println("Error querying users table:", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -260,6 +263,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	var usernames []string
 	for rows.Next() {
 		if err := rows.Scan(&username); err != nil {
+			log.Println("Error scanning row:", err)
 			return nil, err
 		}
 		usernames = append(usernames, username)
@@ -267,6 +271,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 
 	rowsMagazine, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND TEACHER_NAME = $2", date, teacherName)
 	if err != nil {
+		log.Println("Error querying magazine table:", err)
 		return nil, err
 	}
 	defer rowsMagazine.Close()
@@ -275,6 +280,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	for rowsMagazine.Next() {
 		var studentMagazine string
 		if err := rowsMagazine.Scan(&studentMagazine); err != nil {
+			log.Println("Error scanning row:", err)
 			return nil, err
 		}
 		studentsMagazine = append(studentsMagazine, studentMagazine)
@@ -284,6 +290,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 		if !contains(studentsMagazine, username) {
 			err = db.QueryRow("SELECT PARENT_NAME FROM users WHERE CHILD_NAME = $1", username).Scan(&parentName)
 			if err != nil {
+				log.Println("Error querying users table:", err)
 				return nil, err
 			}
 			absentStudentsUsernames = append(absentStudentsUsernames, parentName)
@@ -291,9 +298,11 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	}
 
 	if err := rows.Err(); err != nil {
+		log.Println("Error with rows:", err)
 		return nil, err
 	}
 
+	log.Println("lookStudent returning absentStudentsUsernames:", absentStudentsUsernames)
 	return absentStudentsUsernames, nil
 }
 
