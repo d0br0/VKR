@@ -317,7 +317,7 @@ func getPairs(username string, data string) ([]string, error) {
 	}
 	defer db.Close()
 
-	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE user = $1", username).Scan(&childName)
+	err = db.QueryRow("SELECT CHILD_NAME FROM users WHERE USER_NAME = $1", username).Scan(&childName)
 	if err != nil {
 		log.Println("Error querying users table:", err)
 		return nil, err
