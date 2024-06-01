@@ -288,7 +288,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 
 	for _, username := range usernames {
 		if !contains(studentsMagazine, username) {
-			err = db.QueryRow("SELECT PARENT_NAME FROM users WHERE CHILD_NAME = $1", username).Scan(&parentName)
+			err = db.QueryRow("SELECT USER_NAME FROM users WHERE CHILD_NAME = $1", username).Scan(&parentName)
 			if err != nil {
 				log.Println("Error querying users table:", err)
 				return nil, err
