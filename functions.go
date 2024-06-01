@@ -61,7 +61,6 @@ type StudentState struct {
 }
 
 type GenerateState struct {
-	para   string
 	step   int
 	repeat int
 }
@@ -305,6 +304,7 @@ func (ps *ParentState) makeParent(update tgbotapi.Update, bot *tgbotapi.BotAPI) 
 }
 
 func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.BotAPI, timerControl chan bool) error {
+	var para string
 	t := time.Now().UTC()
 	date := t.Format("02.01.2006")
 	username := update.Message.From.UserName
@@ -323,11 +323,11 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
-			generateState.para = update.Message.Text
+			para = update.Message.Text
 
 			sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 
-			allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+			allVars := fmt.Sprintf("%s, %s, %s, %d", date, para, username, gqs.repeat)
 			qrCodeData, err := generateQRCode(allVars)
 			if err != nil {
 				log.Println("Ошибка при генерации QR-кода:", err)
@@ -339,7 +339,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				return err
 			}
 			//Запись в базу данных
-			err = recordToDatabase(username, date, gqs.para, gqs.repeat)
+			err = recordToDatabase(username, date, para, gqs.repeat)
 			if err != nil {
 				log.Println("Ошибка при записи в базу данных:", err)
 				return err
@@ -351,7 +351,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 					select {
 					case <-ticker.C:
 						gqs.repeat++
-						var allVars = fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
+						var allVars = fmt.Sprintf("%s, %s, %s, %d", date, para, username, gqs.repeat)
 						qrCodeData, err := generateQRCode(allVars)
 						if err != nil {
 							log.Println("Ошибка при генерации QR-кода:", err)
@@ -364,7 +364,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 						}
 						// Запись в базу данных
 
-						if err = recordToDatabase(username, date, gqs.para, gqs.repeat); err != nil {
+						if err = recordToDatabase(username, date, para, gqs.repeat); err != nil {
 							log.Println("Ошибка при записи в базу данных:", err)
 							return
 						}
@@ -374,7 +374,8 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 					}
 				}
 			}()
-			absentStudentsUsernames, err := lookStudent(username, date, gqs.para)
+			delete(generateStates, update.Message.Chat.ID)
+			absentStudentsUsernames, err := lookStudent(username, date, para)
 			if err != nil {
 				log.Println("Ошибка при записи в базу данных:", err)
 				return err
@@ -384,7 +385,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Отсутствует студент: "+absentStudentUsername)
 				bot.Send(msg)
 			}
-			delete(generateStates, update.Message.Chat.ID)
+			para = ""
 		}
 	}
 	return nil
@@ -423,6 +424,10 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	}
 
 	return nil
+}
+
+func calingParents() {
+
 }
 
 func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
