@@ -426,10 +426,6 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 	return nil
 }
 
-func calingParents() {
-
-}
-
 func (sqs *ScanState) handleQRCodeMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 	username := update.Message.From.UserName
 	scanState, ok := scanStates[update.Message.Chat.ID]
