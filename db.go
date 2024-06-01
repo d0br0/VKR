@@ -246,7 +246,7 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	}
 
 	// Запрос в таблицу users
-	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE username = $1", studentName).Scan(&groupName)
+	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE USER_NAME = $1", studentName).Scan(&groupName)
 	if err != nil {
 		return nil, err
 	}
