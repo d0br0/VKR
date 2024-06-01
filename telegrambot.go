@@ -176,6 +176,8 @@ func telegramBot() {
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
 				case "Посмотреть посещаемость ребёнка":
 					cs.lookChildren(update, bot)
+				case "Вернуться в главное меню":
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
 				}
 			}
 		}
