@@ -371,7 +371,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 							log.Println("Ошибка при отправке QR-кода в чат:", err)
 							return
 						}
-						// Запись в базу данных
+						sendMessage(bot, update.Message.Chat.ID, "                                                                                                                                               ")
 
 						if err = recordToDatabase(username, date, gqs.para, gqs.repeat); err != nil {
 							log.Println("Ошибка при записи в базу данных:", err)
