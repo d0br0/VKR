@@ -247,13 +247,13 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 		return nil, err
 	}
 
-	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE user = $1", studentName).Scan(&groupName)
+	err = db.QueryRow("SELECT GROUP_NAME FROM users WHERE USER_NAME = $1", studentName).Scan(&groupName)
 	if err != nil {
 		log.Println("Error querying users table:", err)
 		return nil, err
 	}
 
-	rows, err := db.Query("SELECT username FROM users WHERE GROUP_NAME = $1", groupName)
+	rows, err := db.Query("SELECT USER_NAME FROM users WHERE GROUP_NAME = $1", groupName)
 	if err != nil {
 		log.Println("Error querying users table:", err)
 		return nil, err
