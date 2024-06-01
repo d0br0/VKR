@@ -130,6 +130,7 @@ func telegramBot() {
 				case "Стоп":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
 					timerControl <- true
+					callingParents(update, bot)
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
 				case "Журнал":
@@ -150,6 +151,7 @@ func telegramBot() {
 				case "Стоп":
 					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Журнал", "Создание студента", "Создание родителя"})
 					timerControl <- true
+					callingParents(update, bot)
 				case "Отметить присутствующих":
 					gqs.markStudents(update, bot, timerControl)
 				case "Журнал":

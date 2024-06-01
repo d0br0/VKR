@@ -26,6 +26,7 @@ var sqs = &ScanState{}
 var ms = &MagazineState{}
 var ps = &ParentState{}
 var cs = &ChildrenState{}
+var cps = &CallingState{}
 var userStates = make(map[int64]*UserState)
 var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
@@ -61,6 +62,7 @@ type StudentState struct {
 }
 
 type GenerateState struct {
+	para   string
 	step   int
 	repeat int
 }
@@ -85,6 +87,12 @@ type ParentState struct {
 type ChildrenState struct {
 	date string
 	step int
+}
+
+type CallingState struct {
+	username string
+	date     string
+	para     string
 }
 
 func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
@@ -304,7 +312,6 @@ func (ps *ParentState) makeParent(update tgbotapi.Update, bot *tgbotapi.BotAPI) 
 }
 
 func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.BotAPI, timerControl chan bool) error {
-	var para string
 	t := time.Now().UTC()
 	date := t.Format("02.01.2006")
 	username := update.Message.From.UserName
@@ -323,11 +330,13 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				sendMessage(bot, update.Message.Chat.ID, "Номер пары не может быть пустым. Пожалуйста, введите название тэга:")
 				return nil
 			}
-			para = update.Message.Text
-
+			gqs.para = update.Message.Text
+			cps.para = gqs.para
+			cps.username = username
+			cps.date = date
 			sendMenu(bot, update.Message.Chat.ID, "Нажмите стоп, когда закончите отмечать", []string{"Стоп"})
 
-			allVars := fmt.Sprintf("%s, %s, %s, %d", date, para, username, gqs.repeat)
+			allVars := fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
 			qrCodeData, err := generateQRCode(allVars)
 			if err != nil {
 				log.Println("Ошибка при генерации QR-кода:", err)
@@ -339,7 +348,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				return err
 			}
 			//Запись в базу данных
-			err = recordToDatabase(username, date, para, gqs.repeat)
+			err = recordToDatabase(username, date, gqs.para, gqs.repeat)
 			if err != nil {
 				log.Println("Ошибка при записи в базу данных:", err)
 				return err
@@ -351,7 +360,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 					select {
 					case <-ticker.C:
 						gqs.repeat++
-						var allVars = fmt.Sprintf("%s, %s, %s, %d", date, para, username, gqs.repeat)
+						var allVars = fmt.Sprintf("%s, %s, %s, %d", date, gqs.para, username, gqs.repeat)
 						qrCodeData, err := generateQRCode(allVars)
 						if err != nil {
 							log.Println("Ошибка при генерации QR-кода:", err)
@@ -364,7 +373,7 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 						}
 						// Запись в базу данных
 
-						if err = recordToDatabase(username, date, para, gqs.repeat); err != nil {
+						if err = recordToDatabase(username, date, gqs.para, gqs.repeat); err != nil {
 							log.Println("Ошибка при записи в базу данных:", err)
 							return
 						}
@@ -375,17 +384,6 @@ func (gqs *GenerateState) markStudents(update tgbotapi.Update, bot *tgbotapi.Bot
 				}
 			}()
 			delete(generateStates, update.Message.Chat.ID)
-			absentStudentsUsernames, err := lookStudent(username, date, para)
-			if err != nil {
-				log.Println("Ошибка при записи в базу данных:", err)
-				return err
-			}
-
-			for _, absentStudentUsername := range absentStudentsUsernames {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Отсутствует студент: "+absentStudentUsername)
-				bot.Send(msg)
-			}
-			para = ""
 		}
 	}
 	return nil
@@ -423,6 +421,20 @@ func sendQRToTelegramChat(bot *tgbotapi.BotAPI, chatID int64, qrCodeData []byte)
 		log.Panic(err)
 	}
 
+	return nil
+}
+
+func callingParents(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	absentStudentsUsernames, err := lookStudent(cps.username, cps.date, cps.para)
+	if err != nil {
+		log.Println("Ошибка при записи в базу данных:", err)
+		return err
+	}
+
+	for _, absentStudentUsername := range absentStudentsUsernames {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Отсутствует студент: "+absentStudentUsername)
+		bot.Send(msg)
+	}
 	return nil
 }
 
