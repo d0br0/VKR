@@ -106,6 +106,16 @@ func telegramBot() {
 			continue
 		}
 
+		childrenState, ok := childrenStates[update.Message.Chat.ID]
+		if ok {
+			// Если есть, обрабатываем сообщение в контексте создания группы
+			err := childrenState.lookChildren(update, bot)
+			if err != nil {
+				log.Printf("Error making group: %v\n", err)
+			}
+			continue
+		}
+
 		if update.Message.Text != "" {
 			if role == "Администратор" {
 				switch update.Message.Text {
