@@ -241,9 +241,27 @@ func lookStudent(teacherName string, date string, pairNumber string) ([]string, 
 	}
 	defer db.Close()
 
-	err = db.QueryRow("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3 AND STUDENT_NAME <> ''", date, pairNumber, teacherName).Scan(&studentName)
+	row, err := db.Query("SELECT STUDENT_NAME FROM magazine WHERE DATE = $1 AND PAIR_NUMBER = $2 AND TEACHER_NAME = $3", date, pairNumber, teacherName)
 	if err != nil {
 		log.Println("Error querying magazine table:", err)
+		return nil, err
+	}
+	defer row.Close()
+
+	for row.Next() {
+		err := row.Scan(&studentName)
+		if err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, err
+		}
+
+		if studentName != "" {
+			break
+		}
+	}
+
+	if err := row.Err(); err != nil {
+		log.Println("Error during rows iteration:", err)
 		return nil, err
 	}
 
