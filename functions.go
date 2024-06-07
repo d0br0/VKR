@@ -100,7 +100,7 @@ func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) erro
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch userState.step {
 		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите тэг пользователя:")
+			sendMessage(bot, update.Message.Chat.ID, "Введите 'Имя пользователя Telegram':")
 			userState.step++
 		case 1:
 			if update.Message.Text == "" {
@@ -164,7 +164,7 @@ func (ss *StudentState) makeStudent(update tgbotapi.Update, bot *tgbotapi.BotAPI
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch studentState.step {
 		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите тэг студента:")
+			sendMessage(bot, update.Message.Chat.ID, "Введите 'Имя пользователя Telegram' студента:")
 			studentState.step++
 		case 1:
 			if update.Message.Text == "" {
@@ -219,7 +219,7 @@ func (ps *ParentState) makeParent(update tgbotapi.Update, bot *tgbotapi.BotAPI) 
 	if os.Getenv("DB_SWITCH") == "on" {
 		switch parentState.step {
 		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите тэг родителя:")
+			sendMessage(bot, update.Message.Chat.ID, "Введите 'Имя пользователя Telegram', родителя:")
 			parentState.step++
 		case 1:
 			if update.Message.Text == "" {
