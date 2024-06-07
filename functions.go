@@ -95,52 +95,6 @@ type CallingState struct {
 	para     string
 }
 
-func (gs *GroupState) makeGroup(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
-
-	// Получаем состояние группы из карты по ID чата
-	groupState, ok := groupStates[update.Message.Chat.ID]
-	if !ok {
-		// Если состояние группы не найдено, создаем новое состояние
-		groupState = &GroupState{}
-		groupStates[update.Message.Chat.ID] = groupState
-	}
-
-	if os.Getenv("DB_SWITCH") == "on" {
-		switch groupState.step {
-		case 0:
-			sendMessage(bot, update.Message.Chat.ID, "Введите название группы:")
-			groupState.step++
-		case 1:
-			if update.Message.Text == "" {
-				sendMessage(bot, update.Message.Chat.ID, "Название группы не может быть пустым. Пожалуйста, введите название группы:")
-				return nil
-			}
-			groupState.nameGroup = update.Message.Text
-			sendMessage(bot, update.Message.Chat.ID, "Введите имя классного руководителя:")
-			groupState.step++
-		case 2:
-			if update.Message.Text == "" {
-				sendMessage(bot, update.Message.Chat.ID, "Имя классного руководителя не может быть пустым. Пожалуйста, введите имя классного руководителя:")
-				return nil
-			}
-			groupState.classLeader = update.Message.Text
-
-			if err := collectDataGroup(groupState.nameGroup, groupState.classLeader); err != nil {
-				sendMessage(bot, update.Message.Chat.ID, "Database error, but bot still working.")
-				return fmt.Errorf("collectDataGroup failed: %w", err)
-			} else {
-				sendMessage(bot, update.Message.Chat.ID, "Группа успешно создана!")
-				groupState.step = 0
-				groupState.nameGroup = ""
-				groupState.classLeader = ""
-				delete(groupStates, update.Message.Chat.ID)
-				sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Вернуться в главное меню"})
-			}
-		}
-	}
-	return nil
-}
-
 func (us *UserState) makeUser(update tgbotapi.Update, bot *tgbotapi.BotAPI) error {
 
 	// Получаем состояние пользователя из карты по ID чата

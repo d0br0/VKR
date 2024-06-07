@@ -120,15 +120,13 @@ func telegramBot() {
 			if role == "Администратор" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание пользователя", "Создание родителя", "Журнал"})
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
-				case "Создание группы":
-					gs.makeGroup(update, bot)
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание пользователя", "Создание родителя", "Журнал"})
 				case "Создание пользователя":
 					us.makeUser(update, bot)
 				case "Стоп":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание группы", "Создание пользователя", "Создание родителя", "Журнал"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Отметить присутствующих", "Создание пользователя", "Создание родителя", "Журнал"})
 					timerControl <- true
 					callingParents(update, bot)
 				case "Отметить присутствующих":
