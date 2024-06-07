@@ -19,7 +19,6 @@ import (
 )
 
 var us = &UserState{}
-var gs = &GroupState{}
 var ss = &StudentState{}
 var gqs = &GenerateState{}
 var sqs = &ScanState{}
@@ -28,7 +27,6 @@ var ps = &ParentState{}
 var cs = &ChildrenState{}
 var cps = &CallingState{}
 var userStates = make(map[int64]*UserState)
-var groupStates = make(map[int64]*GroupState)
 var studentStates = make(map[int64]*StudentState)
 var generateStates = make(map[int64]*GenerateState)
 var scanStates = make(map[int64]*ScanState)
@@ -46,12 +44,6 @@ type UserState struct {
 	fio       string
 	groupName string
 	step      int
-}
-
-type GroupState struct {
-	nameGroup   string
-	classLeader string
-	step        int
 }
 
 type StudentState struct {
