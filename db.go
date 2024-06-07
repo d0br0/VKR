@@ -53,25 +53,6 @@ func collectDataUsers(userName string, role string, fio string, groupName string
 	return nil
 }
 
-func collectDataGroup(groupName string, classLeader string) error {
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	// SQL запрос для добавления новой группы в таблицу "group"
-	query := `INSERT INTO structure(group_name, class_leader) VALUES($1, $2);`
-
-	// Выполнение SQL запроса
-	if _, err := db.Exec(query, groupName, classLeader); err != nil {
-		log.Printf("Error executing query: %v\n", err)
-		return err
-	}
-
-	return nil
-}
-
 func getUserRole(username string) (string, error) {
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {
@@ -390,10 +371,6 @@ func createTable() error {
 	}
 	//Создаём таблицу magazine
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS magazine (ID SERIAL PRIMARY KEY, DATE TEXT, PAIR_NUMBER TEXT, TEACHER_NAME TEXT, REPEAT TEXT, STUDENT_NAME TEXT);`); err != nil {
-		return err
-	}
-	//Создаём таблицу group
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS  structure (ID SERIAL PRIMARY KEY, GROUP_NAME TEXT, CLASS_LEADER TEXT);`); err != nil {
 		return err
 	}
 
