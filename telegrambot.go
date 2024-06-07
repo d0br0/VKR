@@ -46,16 +46,6 @@ func telegramBot() {
 			continue
 		}
 
-		groupState, ok := groupStates[update.Message.Chat.ID]
-		if ok {
-			// Если есть, обрабатываем сообщение в контексте создания группы
-			err := groupState.makeGroup(update, bot)
-			if err != nil {
-				log.Printf("Error making group: %v\n", err)
-			}
-			continue
-		}
-
 		studentState, ok := studentStates[update.Message.Chat.ID]
 		if ok {
 			// Если есть, обрабатываем сообщение в контексте создания группы
