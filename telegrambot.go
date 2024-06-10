@@ -163,11 +163,11 @@ func telegramBot() {
 			} else if role == "Родитель" {
 				switch update.Message.Text {
 				case "/start":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость студента"})
 				case "Посмотреть посещаемость ребёнка":
 					cs.lookChildren(update, bot)
 				case "Вернуться в главное меню":
-					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость ребёнка"})
+					sendMenu(bot, update.Message.Chat.ID, "Выбирете действие:", []string{"Посмотреть посещаемость студента"})
 				}
 			}
 		}
